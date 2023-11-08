@@ -44,8 +44,21 @@ export class UiSketcherWebview {
 
     await vscode.workspace.applyEdit(edit);
 
-    this.lastCursorPosition.translate(0, text.length);
-    // this.updateCursorPosition();
+    const textLines = text.split("\n");
+    const newLineCount = textLines.length - 1;
+    const lastLineLength = textLines[textLines.length - 1].length;
+    if (newLineCount === 0) {
+      this.lastCursorPosition = this.lastCursorPosition.translate(
+        0,
+        lastLineLength,
+      );
+    } else {
+      this.lastCursorPosition = new vscode.Position(
+        this.lastCursorPosition.line + newLineCount,
+        lastLineLength,
+      );
+    }
+    this.updateCursorPosition();
   };
 
   private saveCurrentPosition = () => {

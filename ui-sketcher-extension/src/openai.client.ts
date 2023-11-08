@@ -4,21 +4,25 @@ type UITransformerConfig =
   | {
       apiKey: string;
       onChunk?: (chunk: string) => Promise<void>;
-      libraries?: string[];
+      stack?: string[];
       preCode: string;
       postCode: string;
     }
   | {
       apiKey: string;
       onChunk?: (chunk: string) => Promise<void>;
-      libraries?: string[];
+      stack?: string[];
       preCode?: null;
       postCode?: null;
     };
 
+const START_QUOTE_REGEX = /```\w*\n/;
+const PARTIAL_END_QUOTE = /\n`{0,3}$/;
+const END_QUOTE_REGEX = /\n```$/;
+
 export const uiToComponent = async (
   base64Image: string,
-  { apiKey, libraries = [], onChunk }: UITransformerConfig,
+  { apiKey, stack = [], onChunk }: UITransformerConfig,
 ) => {
   const client = new OpenAI({ apiKey });
   const response = await client.chat.completions.create({
@@ -30,7 +34,7 @@ export const uiToComponent = async (
         role: "system",
         content: `You are an expert frontend developer.
 Your task is to integrate mockups into html.
-Only respond with an html code block.
+Only respond with the html to be rendered inside a code block. Do not include any other text.
 `,
       },
       {
@@ -51,14 +55,48 @@ Only respond with an html code block.
     ],
   });
 
+  let buffer = "";
   let output = "";
+  let hasCodeStarted = false;
 
   for await (const chunk of response) {
     if (chunk.choices.length === 0 || !chunk.choices[0].delta.content) continue;
 
     const textChunk = chunk.choices[0].delta.content;
-    output += textChunk;
-    if (onChunk) await onChunk(textChunk);
+
+    buffer += textChunk;
+
+    // We want to strip everything but the code
+    if (!hasCodeStarted) {
+      hasCodeStarted = START_QUOTE_REGEX.test(buffer);
+
+      if (hasCodeStarted) {
+        if (buffer.length > 0) {
+          const code = buffer.replace(START_QUOTE_REGEX, "");
+          output += code;
+          if (onChunk) await onChunk(code);
+        }
+        buffer = "";
+      }
+
+      continue;
+    }
+
+    if (PARTIAL_END_QUOTE.test(buffer)) {
+      if (END_QUOTE_REGEX.test(buffer)) {
+        const code = buffer.replace(END_QUOTE_REGEX, "");
+        output += code;
+        if (onChunk) await onChunk(code);
+        break;
+      }
+
+      // If full end quote, stop quoting
+      continue;
+    }
+
+    output += buffer;
+    if (onChunk) await onChunk(buffer);
+    buffer = "";
   }
 
   return output;
