@@ -1,7 +1,7 @@
 {
-  "name": "ui-sketcher",
+  "name": "ui-sketcher-extension",
   "displayName": "ui-sketcher",
-  "description": "Draw a crude UI and watch it come to life",
+  "description": "From crude drawing to UI",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.84.0"
