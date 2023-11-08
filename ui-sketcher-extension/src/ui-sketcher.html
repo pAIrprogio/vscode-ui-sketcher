@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -9,7 +9,7 @@
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; img-src * data: blob: 'unsafe-inline'; font-src * data: blob: 'unsafe-inline'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';"
+      content="default-src 'none'; img-src * data: blob: 'unsafe-inline'; font-src * data: blob: 'unsafe-inline'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';connect-src https://unpkg.com/@tldraw/;"
     />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

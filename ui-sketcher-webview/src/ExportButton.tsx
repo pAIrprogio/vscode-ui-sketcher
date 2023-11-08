@@ -2,6 +2,7 @@ import { useEditor } from "@tldraw/tldraw";
 import { useState } from "react";
 import { getSvgAsImage } from "./lib/getSvgAsImage";
 import { blobToBase64 } from "./lib/blobToBase64";
+import { sendMessage } from "./lib/messageBus";
 
 export const ExportButton = () => {
   const editor = useEditor();
@@ -13,22 +14,36 @@ export const ExportButton = () => {
         setLoading(true);
         try {
           e.preventDefault();
+
           const svg = await editor.getSvg(
-            Array.from(editor.currentPageShapeIds),
+            Array.from(editor.currentPageShapeIds)
           );
+
           if (!svg) {
+            console.error("Failed to grab svg");
             return;
           }
+
+          console.debug("UI-Sketcher: grabbed svg");
+
           const png = await getSvgAsImage(svg, {
             type: "png",
             quality: 1,
             scale: 1,
           });
-          const dataUrl = await blobToBase64(png!);
-          window.postMessage({
+
+          console.debug("UI-Sketcher: created png");
+
+          const dataUrl = (await blobToBase64(png!)) as string;
+
+          console.debug("UI-Sketcher: computed base64");
+
+          sendMessage({
             command: "tldraw:export",
             payload: { base64: dataUrl },
           });
+
+          console.debug("UI-Sketcher: sent message");
         } finally {
           setLoading(false);
         }

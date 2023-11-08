@@ -1,41 +1,128 @@
 import * as vscode from "vscode";
 import sketcherHtml from "./ui-sketcher.html";
 import * as ejs from "ejs";
+import { uiToComponent } from "./openai.client";
 
 export class UiSketcherWebview {
   panel: vscode.WebviewPanel | undefined;
+  lastDocument: vscode.TextDocument | undefined;
+  lastCursorPosition: vscode.Position | undefined;
 
-  public constructor(private context: vscode.ExtensionContext) {}
+  public constructor(
+    private context: vscode.ExtensionContext,
+    private logChannel: vscode.OutputChannel,
+  ) {}
 
   public register = () => {
     return this.context.subscriptions.push(
-      vscode.commands.registerCommand("ui-sketcher.open", this.open)
+      vscode.commands.registerCommand("ui-sketcher.open", this.open),
     );
   };
 
   private open = () => {
+    this.saveCurrentPosition();
     this.panel = vscode.window.createWebviewPanel(
       "uiSketcher",
       "UI Sketcher",
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
-      }
+      },
     );
 
     this.panel.webview.html = this.getWebviewContent();
 
-    this.panel.webview.onDidReceiveMessage((message) => {
-      switch (message.command) {
-        case "tldraw:export":
-          const { base64 } = message.payload as { base64: string };
-          return;
-        default:
-          vscode.window.showErrorMessage(
-            "Unable to handle command from UI Sketcher"
-          );
-      }
-    });
+    this.panel.webview.onDidReceiveMessage(this.handleMessage);
+    this.logChannel.appendLine("UI Sketcher: Panel opened");
+  };
+
+  private insertText = async (text: string) => {
+    if (!this.lastDocument || !this.lastCursorPosition) return false;
+
+    const edit = new vscode.WorkspaceEdit();
+    edit.insert(this.lastDocument.uri, this.lastCursorPosition, text);
+
+    await vscode.workspace.applyEdit(edit);
+
+    this.lastCursorPosition.translate(0, text.length);
+    // this.updateCursorPosition();
+  };
+
+  private saveCurrentPosition = () => {
+    let activeEditor = vscode.window.activeTextEditor;
+
+    if (!activeEditor) {
+      vscode.window.showErrorMessage(
+        "UI Sketcher: Please open a text file before using UI Sketcher",
+      );
+      throw new Error("No active editor");
+    }
+
+    if (activeEditor) {
+      this.lastDocument = activeEditor.document;
+      this.lastCursorPosition = activeEditor.selection.active;
+      return true;
+    }
+  };
+
+  private updateCursorPosition = () => {
+    const activeEditor = vscode.window.activeTextEditor;
+    const position = this.lastCursorPosition;
+
+    if (!activeEditor || !position) return;
+
+    activeEditor.selection = new vscode.Selection(position, position);
+    activeEditor.revealRange(new vscode.Range(position, position));
+  };
+
+  private handleMessage = async (message: {
+    command: "tldraw:export";
+    payload: { base64: string };
+  }) => {
+    this.logChannel.appendLine(
+      `UI Sketcher: Received message with command ${message.command}`,
+    );
+    switch (message.command) {
+      case "tldraw:export":
+        const { base64 } = message.payload;
+        await this.createCompletion(base64);
+        return;
+      default:
+        vscode.window.showErrorMessage(
+          "Unable to handle command from UI Sketcher",
+        );
+    }
+  };
+
+  private createCompletion = async (base64Image: string) => {
+    const apiToken = await this.context.secrets.get("OPENAI_API_KEY");
+
+    if (!apiToken) {
+      vscode.window.showErrorMessage(
+        'UI Sketcher: Please set your Open AI API key first using "UI Sketcher: Set Open AI API Key" command',
+      );
+      return;
+    }
+
+    this.logChannel.appendLine("UI Sketcher: Creating completion");
+
+    try {
+      await uiToComponent(base64Image, {
+        apiKey: apiToken,
+        onChunk: async (text) => {
+          this.logChannel.append(text);
+          await this.insertText(text);
+        },
+      });
+    } catch (e: any) {
+      vscode.window.showErrorMessage(
+        "UI Sketcher: Unable to create completion due to issues with Open AI API",
+      );
+      this.logChannel.appendLine("UI Sketcher: Unable to create completion");
+      if (e?.message) this.logChannel.appendLine(e.message);
+    }
+
+    this.logChannel.append("\n");
   };
 
   private getNonce() {
@@ -52,21 +139,24 @@ export class UiSketcherWebview {
     if (!this.panel) throw new Error("Panel not initialized");
 
     const indexUri = this.panel.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "web-dist/assets/index.js")
+      vscode.Uri.joinPath(
+        this.context.extensionUri,
+        "web-dist/assets/index.js",
+      ),
     );
 
     const vendorsUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "web-dist/assets/vendors.js"
-      )
+        "web-dist/assets/vendors.js",
+      ),
     );
 
     const stylesUri = this.panel.webview.asWebviewUri(
       vscode.Uri.joinPath(
         this.context.extensionUri,
-        "web-dist/assets/index.css"
-      )
+        "web-dist/assets/index.css",
+      ),
     );
 
     const nonce = this.getNonce();

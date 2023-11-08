@@ -7,6 +7,7 @@ export default defineConfig({
   build: {
     outDir: "../ui-sketcher-extension/web-dist",
     chunkSizeWarningLimit: 1000000000,
+    sourcemap: true,
     rollupOptions: {
       output: {
         entryFileNames: `assets/[name].js`,

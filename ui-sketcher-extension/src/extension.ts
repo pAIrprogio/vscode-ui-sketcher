@@ -7,8 +7,10 @@ import { UiSketcherTokenPrompt } from "./ui-sketcher-token-prompt.command";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  new UiSketcherWebview(context).register();
-  new UiSketcherTokenPrompt(context).register();
+  const logChannel = vscode.window.createOutputChannel("UI Sketcher");
+
+  new UiSketcherWebview(context, logChannel).register();
+  new UiSketcherTokenPrompt(context, logChannel).register();
 }
 
 // This method is called when your extension is deactivated
