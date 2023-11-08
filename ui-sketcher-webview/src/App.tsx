@@ -1,12 +1,13 @@
-import "./App.css";
 import "@tldraw/tldraw/tldraw.css";
 import { Tldraw } from "@tldraw/tldraw";
+import { ExportButton } from "./ExportButton";
 
 export const App = () => {
   return (
-    <>
-      <h1>TLDraw</h1>
-      <Tldraw />
-    </>
+    <div className={`w-screen h-screen`}>
+      <Tldraw persistenceKey="tldraw">
+        <ExportButton />
+      </Tldraw>
+    </div>
   );
 };
