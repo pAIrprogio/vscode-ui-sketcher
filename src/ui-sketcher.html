@@ -9,7 +9,7 @@
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; img-src <%= cspSource %> data:; font-src <%= cspSource %> data:; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';"
+      content="default-src 'none'; img-src * data: blob: 'unsafe-inline'; font-src * data: blob: 'unsafe-inline'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';"
     />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

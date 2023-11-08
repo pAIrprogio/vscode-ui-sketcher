@@ -1,5 +1,12 @@
 import "./App.css";
+import "@tldraw/tldraw/tldraw.css";
+import { Tldraw } from "@tldraw/tldraw";
 
 export const App = () => {
-  return <div>Hello world</div>;
+  return (
+    <>
+      <h1>TLDraw</h1>
+      <Tldraw />
+    </>
+  );
 };
