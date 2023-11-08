@@ -16,6 +16,10 @@
       {
         "command": "ui-sketcher.open",
         "title": "UI Sketcher: Open drawing board"
+      },
+      {
+        "command": "ui-sketcher.set-openai-token",
+        "title": "UI Sketcher: Set OpenAI API Token"
       }
     ]
   },
@@ -49,6 +53,7 @@
     "webpack-cli": "^5.0.1"
   },
   "dependencies": {
-    "ejs": "^3.1.9"
+    "ejs": "^3.1.9",
+    "openai": "^4.16.1"
   }
 }

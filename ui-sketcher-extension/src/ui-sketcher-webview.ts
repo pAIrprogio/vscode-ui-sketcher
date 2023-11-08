@@ -24,6 +24,18 @@ export class UiSketcherWebview {
     );
 
     this.panel.webview.html = this.getWebviewContent();
+
+    this.panel.webview.onDidReceiveMessage((message) => {
+      switch (message.command) {
+        case "tldraw:export":
+          const { base64 } = message.payload as { base64: string };
+          return;
+        default:
+          vscode.window.showErrorMessage(
+            "Unable to handle command from UI Sketcher"
+          );
+      }
+    });
   };
 
   private getNonce() {

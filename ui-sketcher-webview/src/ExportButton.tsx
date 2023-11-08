@@ -26,7 +26,7 @@ export const ExportButton = () => {
           });
           const dataUrl = await blobToBase64(png!);
           window.postMessage({
-            type: "tldraw:export",
+            command: "tldraw:export",
             payload: { base64: dataUrl },
           });
         } finally {

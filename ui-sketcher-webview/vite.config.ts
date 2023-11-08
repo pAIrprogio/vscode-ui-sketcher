@@ -5,7 +5,7 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: "../web-dist",
+    outDir: "../ui-sketcher-extension/web-dist",
     chunkSizeWarningLimit: 1000000000,
     rollupOptions: {
       output: {
