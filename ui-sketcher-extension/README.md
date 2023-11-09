@@ -1,6 +1,8 @@
 # UI Sketcher
 
-Turn rough UI sketches into code
+Turn rough sketches into UI code
+
+![](./images/demo.gif)
 
 ## Installation
 

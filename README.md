@@ -1,12 +1,12 @@
 # UI Sketcher
 
-Turn rough UI sketches into code
+Turn rough sketches into UI code
+
+https://github.com/pAIrprogio/vscode-ui-sketcher/assets/1863461/9a4b482b-add3-4820-9406-3c16870a180b
 
 ## Installation
 
 Once installed, make sure to run the command `UI Sketcher: Set OpenAI API Token`. Your token will be stored in a secret store handled by VSCode. It will never be shared with anyone.
-
-https://github.com/pAIrprogio/vscode-ui-sketcher/assets/1863461/9a4b482b-add3-4820-9406-3c16870a180b
 
 ## Usage
 
