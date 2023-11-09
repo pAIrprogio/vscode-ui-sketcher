@@ -11,8 +11,8 @@ type UITransformerConfig = {
 };
 
 const START_QUOTE_REGEX = /```\w*\n/;
-const PARTIAL_END_QUOTE = /\n`{0,3}$/;
-const END_QUOTE_REGEX = /\n```$/;
+const PARTIAL_END_QUOTE = /\n`{0,3}/;
+const END_QUOTE_REGEX = /\n```.*/s;
 
 export const uiToComponent = async (
   base64Image: string,
