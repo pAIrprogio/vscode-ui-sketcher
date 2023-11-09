@@ -1,8 +1,15 @@
 {
-  "name": "ui-sketcher-extension",
+  "name": "ui-sketcher",
   "displayName": "UI Sketcher",
-  "description": "From crude drawing to UI code",
-  "version": "0.0.1",
+  "description": "Turn your rough UI sketches into code",
+  "publisher": "pAIrprog",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pAIrprogio/vscode-ui-sketcher"
+  },
+  "license": "MIT",
+  "version": "1.0.1",
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -21,13 +28,37 @@
         "command": "ui-sketcher.set-openai-token",
         "title": "UI Sketcher: Set OpenAI API Token"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "UI Sketcher Configuration",
+      "properties": {
+        "ui-sketcher.stack": {
+          "type": "string",
+          "description": "List of packages used in the project which should be taken into account when generating code"
+        },
+        "ui-sketcher.customInstructions": {
+          "type": "string",
+          "description": "Custom instructions to include when generating code"
+        },
+        "ui-sketcher.includeFileInPrompt": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to include the whole file in the prompt"
+        },
+        "ui-sketcher.maxTokens": {
+          "type": "number",
+          "default": 1000,
+          "description": "Maximum number of tokens to generate"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run package",
     "compile": "webpack",
     "watch": "webpack --watch",
     "package": "webpack --mode production --devtool hidden-source-map",
+    "vscode:package": "vsce package --no-dependencies",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",

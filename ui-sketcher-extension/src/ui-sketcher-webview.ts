@@ -119,9 +119,23 @@ export class UiSketcherWebview {
 
     this.logChannel.appendLine("UI Sketcher: Creating completion");
 
+    const config = vscode.workspace.getConfiguration("ui-sketcher");
+    const maxTokens = config.get<number>("maxTokens")!;
+    const stack = config.get<string>("stack");
+    const customInstructions = config.get<string>("customInstructions");
+    const includeFileInPrompt = config.get<boolean>("includeFileInPrompt")!;
+    const { preCode, postCode } = includeFileInPrompt
+      ? this.textAroundCursor()
+      : { preCode: undefined, postCode: undefined };
+
     try {
       await uiToComponent(base64Image, {
         apiKey: apiToken,
+        maxTokens,
+        stack,
+        customInstructions,
+        preCode,
+        postCode,
         onChunk: async (text) => {
           this.logChannel.append(text);
           await this.insertText(text);
@@ -136,6 +150,18 @@ export class UiSketcherWebview {
     }
 
     this.logChannel.append("\n");
+  };
+
+  private textAroundCursor = (): { preCode?: string; postCode?: string } => {
+    if (!this.lastDocument || !this.lastCursorPosition)
+      return { preCode: undefined, postCode: undefined };
+
+    const text = this.lastDocument.getText();
+    const cursorOffset = this.lastDocument.offsetAt(this.lastCursorPosition);
+    const preCode = text.substring(0, cursorOffset);
+    const postCode = text.substring(cursorOffset);
+
+    return { preCode, postCode };
   };
 
   private getNonce() {

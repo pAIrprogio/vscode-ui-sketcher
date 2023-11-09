@@ -1,20 +1,14 @@
 import OpenAI from "openai";
 
-type UITransformerConfig =
-  | {
-      apiKey: string;
-      onChunk?: (chunk: string) => Promise<void>;
-      stack?: string[];
-      preCode: string;
-      postCode: string;
-    }
-  | {
-      apiKey: string;
-      onChunk?: (chunk: string) => Promise<void>;
-      stack?: string[];
-      preCode?: null;
-      postCode?: null;
-    };
+type UITransformerConfig = {
+  apiKey: string;
+  maxTokens: number;
+  onChunk?: (chunk: string) => Promise<void>;
+  stack?: string;
+  customInstructions?: string;
+  preCode?: string;
+  postCode?: string;
+};
 
 const START_QUOTE_REGEX = /```\w*\n/;
 const PARTIAL_END_QUOTE = /\n`{0,3}$/;
@@ -22,27 +16,61 @@ const END_QUOTE_REGEX = /\n```$/;
 
 export const uiToComponent = async (
   base64Image: string,
-  { apiKey, stack = [], onChunk }: UITransformerConfig,
+  {
+    apiKey,
+    stack,
+    onChunk,
+    maxTokens,
+    customInstructions = "",
+    preCode,
+    postCode,
+  }: UITransformerConfig,
 ) => {
   const client = new OpenAI({ apiKey });
+
+  // SYSTEM PROMPT
+
+  let systemPrompt = `You are an expert frontend developer.
+Your task is to integrate mockups.
+Only respond with the code output inside a code block. Do not include any other text.`;
+
+  if (customInstructions) {
+    systemPrompt += "\n" + customInstructions;
+  }
+
+  // USER PROMPT
+
+  let userPrompt = "Turn this image into code";
+
+  if (stack && stack.length > 0) {
+    userPrompt += "\n\nThe project's stack is: " + stack;
+  }
+
+  if (preCode && postCode) {
+    userPrompt += `
+    
+The current file content is:
+\`\`\`
+${preCode}/* THE OUTPUT CODE WILL BE WRITTEN HERE */${postCode}
+\`\`\`
+`;
+  }
+
   const response = await client.chat.completions.create({
     model: "gpt-4-vision-preview",
     stream: true,
-    max_tokens: 2000,
+    max_tokens: maxTokens,
     messages: [
       {
         role: "system",
-        content: `You are an expert frontend developer.
-Your task is to integrate mockups into html.
-Only respond with the html to be rendered inside a code block. Do not include any other text.
-`,
+        content: systemPrompt,
       },
       {
         role: "user",
         content: [
           {
             type: "text",
-            text: "Turn this image into the html using tailwind",
+            text: userPrompt,
           },
           {
             type: "image_url",
