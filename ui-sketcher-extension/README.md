@@ -2,7 +2,7 @@
 
 Turn rough sketches into UI code
 
-![](./images/demo.gif)
+![UI Sketcher Demo](https://raw.githubusercontent.com/pAIrprogio/vscode-ui-sketcher/main/ui-sketcher-extension/images/demo.gif)
 
 ## Installation
 
