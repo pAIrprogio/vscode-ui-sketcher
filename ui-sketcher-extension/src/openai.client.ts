@@ -10,9 +10,11 @@ type UITransformerConfig = {
   postCode?: string;
 };
 
-const START_QUOTE_REGEX = /```\w*\n/;
-const PARTIAL_END_QUOTE = /\n`{0,3}/;
-const END_QUOTE_REGEX = /\n```.*/s;
+const START_QUOTE_REGEX = /```[^\n]*\n/;
+const PARTIAL_END_QUOTE = /\n`{0,3}$/;
+const FULL_END_QUOTE_REGEX = /\n```/;
+const REMOVE_PREFIX_REGEX = /.*```[^\n]*\n/s;
+const REMOVE_SUFFIX_REGEX = /\n```.*/s;
 
 export const uiToComponent = async (
   base64Image: string,
@@ -98,30 +100,37 @@ ${preCode}/* THE OUTPUT CODE WILL BE WRITTEN HERE */${postCode}
     if (!hasCodeStarted) {
       hasCodeStarted = START_QUOTE_REGEX.test(buffer);
 
-      if (hasCodeStarted) {
-        if (buffer.length > 0) {
-          const code = buffer.replace(START_QUOTE_REGEX, "");
-          output += code;
-          if (onChunk) await onChunk(code);
-        }
-        buffer = "";
-      }
+      if (!hasCodeStarted) continue;
 
-      continue;
+      buffer = buffer.replace(REMOVE_PREFIX_REGEX, "");
     }
 
-    if (PARTIAL_END_QUOTE.test(buffer)) {
-      if (END_QUOTE_REGEX.test(buffer)) {
-        const code = buffer.replace(END_QUOTE_REGEX, "");
+    // Stop at full end quote
+    if (FULL_END_QUOTE_REGEX.test(buffer)) {
+      const code = buffer.replace(REMOVE_SUFFIX_REGEX, "");
+      if (code !== "") {
         output += code;
         if (onChunk) await onChunk(code);
-        break;
       }
+      break;
+    }
 
-      // If full end quote, stop quoting
+    // Buffer if not a full end quote, but a partial one
+    if (PARTIAL_END_QUOTE.test(buffer)) {
+      const parts = buffer.split("\n");
+      buffer = "\n" + parts.pop() || "";
+      const code = parts.join("\n");
+      if (code !== "") {
+        output += code;
+        if (onChunk) await onChunk(code);
+      }
       continue;
     }
 
+    // Skip empty buffer
+    if (buffer === "") continue;
+
+    // Dump buffer
     output += buffer;
     if (onChunk) await onChunk(buffer);
     buffer = "";
