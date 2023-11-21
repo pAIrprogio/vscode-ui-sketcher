@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import sketcherHtml from "./ui-sketcher.html";
 import * as ejs from "ejs";
 import { uiToComponent } from "./openai.client";
+import { getRelativePathOfDocument } from "./vscode-utils";
 
 export class UiSketcherWebview {
   panel: vscode.WebviewPanel | undefined;
@@ -127,9 +128,10 @@ export class UiSketcherWebview {
     const { preCode, postCode } = includeFileInPrompt
       ? this.textAroundCursor()
       : { preCode: undefined, postCode: undefined };
-    const fileName = this.lastDocument?.fileName || "<undefined>";
+    const filePath =
+      getRelativePathOfDocument(this.lastDocument) ?? "<undefined>";
 
-    if (fileName === "<undefined>")
+    if (filePath === "<undefined>")
       this.logChannel.appendLine("UI Sketcher: Unable to get file name");
 
     try {
@@ -140,7 +142,7 @@ export class UiSketcherWebview {
         customInstructions,
         preCode,
         postCode,
-        fileName,
+        filePath,
         onChunk: async (text) => {
           this.logChannel.append(text);
           await this.insertText(text);
