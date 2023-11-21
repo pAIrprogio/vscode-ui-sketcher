@@ -8,7 +8,7 @@
     "url": "https://github.com/pAIrprogio/vscode-ui-sketcher"
   },
   "license": "MIT",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.84.0"

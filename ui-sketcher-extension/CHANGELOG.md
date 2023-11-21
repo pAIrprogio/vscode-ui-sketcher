@@ -1,9 +1,15 @@
 # Change Log
 
-All notable changes to the "ui-sketcher" extension will be documented in this file.
+## [1.0.5] - 2023-21-09
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+### Added
 
-## [Unreleased]
+- User prompt now contains the relative path to the file based on the current workspace folder
+
+### Fixed
+
+- "Make real" button's position is now responsive
+
+## [1.0.0] - 2023-11-09
 
 - Initial release
