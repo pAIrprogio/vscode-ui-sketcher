@@ -26,10 +26,11 @@ Once installed, make sure to run the command `UI Sketcher: Set OpenAI API Token`
 
 - `ui-sketcher.stack`: A string with the list of packages used in the project which should be taken into account when generating code
 - `ui-sketcher.customInstructions`: Custom instructions to include when generating code
+- `ui-sketcher.previewUrl`: A url which should be able to take a relative file's path as a query param and display the file's component as a result. For example http://localhost/test-ui should work with http://localhost/test-ui?path=path/to/file.tsx
 - `ui-sketcher.includeFileInPrompt`: Whether to include the whole file in the prompt, defaults to `false`
 - `ui-sketcher.maxTokens`: Maximum number of tokens to generate, defaults to `1000`
 
 ## Thanks
 
-- [Steve Ruiz](https://twitter.com/steveruizok) for [tldraw](https://github.com/tldraw/tldraw)
-- [Sawyer Hood](https://twitter.com/sawyerhood) for the headstart with [draw-a-ui](https://github.com/SawyerHood/draw-a-ui/tree/main)
+- [Steve Ruiz](https://twitter.com/steveruizok) for [tldraw](https://github.com/tldraw/tldraw) and [makereal](https://github.com/tldraw/make-real)
+- [Sawyer Hood](https://twitter.com/sawyerhood) for the headstart with [draw-a-ui](https://github.com/SawyerHood/draw-a-ui)

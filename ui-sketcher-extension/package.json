@@ -49,6 +49,10 @@
           "type": "number",
           "default": 1000,
           "description": "Maximum number of tokens to generate"
+        },
+        "ui-sketcher.previewUrl": {
+          "type": "string",
+          "description": "A url which should be able to take a relative file's path as a query param and display the file's component as a result. For example http://localhost/test-ui should work with  http://localhost/test-ui?path=path/to/file.tsx"
         }
       }
     }
