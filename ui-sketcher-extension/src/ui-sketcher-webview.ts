@@ -127,6 +127,10 @@ export class UiSketcherWebview {
     const { preCode, postCode } = includeFileInPrompt
       ? this.textAroundCursor()
       : { preCode: undefined, postCode: undefined };
+    const fileName = this.lastDocument?.fileName || "<undefined>";
+
+    if (fileName === "<undefined>")
+      this.logChannel.appendLine("UI Sketcher: Unable to get file name");
 
     try {
       await uiToComponent(base64Image, {
@@ -136,6 +140,7 @@ export class UiSketcherWebview {
         customInstructions,
         preCode,
         postCode,
+        fileName,
         onChunk: async (text) => {
           this.logChannel.append(text);
           await this.insertText(text);

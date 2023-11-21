@@ -6,6 +6,7 @@ type UITransformerConfig = {
   onChunk?: (chunk: string) => Promise<void>;
   stack?: string;
   customInstructions?: string;
+  fileName: string;
   preCode?: string;
   postCode?: string;
 };
@@ -24,6 +25,7 @@ export const uiToComponent = async (
     onChunk,
     maxTokens,
     customInstructions = "",
+    fileName,
     preCode,
     postCode,
   }: UITransformerConfig,
@@ -42,11 +44,13 @@ Only respond with the code output inside a code block. Do not include any other 
 
   // USER PROMPT
 
-  let userPrompt = "Turn this image into code";
+  let userPrompt = `Turn this image into code`;
 
   if (stack && stack.length > 0) {
     userPrompt += "\n\nThe project's stack is: " + stack;
   }
+
+  userPrompt += "\n\nThe file name is: " + fileName;
 
   if (preCode && postCode) {
     userPrompt += `
