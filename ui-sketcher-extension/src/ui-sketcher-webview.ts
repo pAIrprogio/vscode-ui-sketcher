@@ -205,9 +205,23 @@ export class UiSketcherWebview {
       ),
     );
 
+    const config = vscode.workspace.getConfiguration("ui-sketcher");
+    const previewUrl = config.get<string>("previewUrl");
+    // Need to grab scheme + host and trailing slash
+    const previewHost = previewUrl?.match(/^.*\/\/[^\/]+/)?.[0];
+    const hidePreviewOnStart =
+      this.lastDocument && this.lastDocument.getText().length === 0;
+    const relativePath = getRelativePathOfDocument(this.lastDocument);
+
     const nonce = this.getNonce();
 
+    this.logChannel.appendLine("UI Sketcher: Getting webview content");
+
     return ejs.render(sketcherHtml, {
+      previewHost,
+      previewUrl,
+      relativePath,
+      displayPreviewOnStart: !hidePreviewOnStart,
       indexUri,
       vendorsUri,
       stylesUri,

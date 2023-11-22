@@ -9,12 +9,17 @@
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; img-src * data: blob: 'unsafe-inline'; font-src * data: blob: 'unsafe-inline'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>';connect-src https://unpkg.com/@tldraw/;"
+      content="default-src 'none'; img-src * data: blob: 'unsafe-inline'; font-src * data: blob: 'unsafe-inline'; style-src <%= cspSource %> 'unsafe-inline'; script-src 'nonce-<%= nonce %>'; connect-src https://unpkg.com/@tldraw/; frame-src <%= previewHost %>/;"
     />
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UI Sketcher</title>
     <!-- Add global vars -->
+    <script nonce="<%= nonce %>">
+      window.displayPreviewOnStart = <%= displayPreviewOnStart %>;
+      window.previewUrl = "<%= previewUrl %>";
+      window.relativePath = "<%= relativePath %>";
+    </script>
     <script
       nonce="<%= nonce %>"
       type="module"
