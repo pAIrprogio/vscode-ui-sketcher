@@ -2,7 +2,7 @@ import { WebviewApi } from "vscode-webview";
 
 type Message = {
   command: "tldraw:export";
-  payload: { base64: string };
+  payload: { base64: string; imageTexts: string };
 };
 
 const vscode =

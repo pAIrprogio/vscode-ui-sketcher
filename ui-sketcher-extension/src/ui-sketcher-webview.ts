@@ -3,9 +3,11 @@ import sketcherHtml from "./ui-sketcher.html";
 import * as ejs from "ejs";
 import { uiToComponent } from "./openai.client";
 import { getRelativePathOfDocument } from "./vscode-utils";
+import path = require("path");
 
 export class UiSketcherWebview {
   panel: vscode.WebviewPanel | undefined;
+  lastTextEditor: vscode.TextEditor | undefined;
   lastDocument: vscode.TextDocument | undefined;
   lastCursorPosition: vscode.Position | undefined;
 
@@ -17,25 +19,60 @@ export class UiSketcherWebview {
   public register = () => {
     return this.context.subscriptions.push(
       vscode.commands.registerCommand("ui-sketcher.open", this.open),
+      this.watchActiveDocumentClose(),
     );
   };
 
+  private watchActiveDocumentClose = () => {
+    return vscode.workspace.onDidCloseTextDocument((document) => {
+      if (this.lastDocument === document && this.panel) {
+        this.panel.dispose();
+        this.panel = undefined;
+        this.lastTextEditor = undefined;
+        this.lastDocument = undefined;
+        this.lastCursorPosition = undefined;
+      }
+    });
+  };
+
   private open = () => {
+    if (this.isOpen) {
+      this.panel?.reveal(vscode.ViewColumn.Beside);
+      if (this.lastTextEditor === vscode.window.activeTextEditor) return;
+    }
+
     this.saveCurrentPosition();
+    const panelName = getRelativePathOfDocument(this.lastDocument!);
+    if (this.isOpen) this.panel!.dispose();
+
     this.panel = vscode.window.createWebviewPanel(
       "uiSketcher",
-      "UI Sketcher",
+      panelName,
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
       },
     );
 
-    this.panel.webview.html = this.getWebviewContent();
+    this.panel.iconPath = vscode.Uri.file(
+      path.join(this.context.extensionPath, "images", "icon.png"),
+    );
 
+    this.panel.onDidDispose(() => {
+      this.panel = undefined;
+      this.lastTextEditor = undefined;
+      this.lastDocument = undefined;
+      this.lastCursorPosition = undefined;
+    });
+
+    this.panel.webview.html = this.getWebviewContent();
     this.panel.webview.onDidReceiveMessage(this.handleMessage);
     this.logChannel.appendLine("UI Sketcher: Panel opened");
   };
+
+  private get isOpen() {
+    return !!this.panel;
+  }
 
   private insertText = async (text: string) => {
     if (!this.lastDocument || !this.lastCursorPosition) return false;
@@ -62,6 +99,33 @@ export class UiSketcherWebview {
     this.updateCursorPosition();
   };
 
+  private cleanFile = async () => {
+    if (!this.lastDocument) return false;
+
+    const edit = new vscode.WorkspaceEdit();
+    const lastLine = this.lastDocument.lineAt(this.lastDocument.lineCount - 1);
+    const range = new vscode.Range(
+      new vscode.Position(0, 0),
+      new vscode.Position(
+        this.lastDocument.lineCount - 1,
+        lastLine.range.end.character,
+      ),
+    );
+    edit.delete(this.lastDocument.uri, range);
+
+    await vscode.workspace.applyEdit(edit);
+    this.resetCursorPosition();
+  };
+
+  private resetCursorPosition = () => {
+    if (!this.lastDocument) return false;
+
+    this.lastCursorPosition = new vscode.Position(0, 0);
+    this.updateCursorPosition();
+
+    return true;
+  };
+
   private saveCurrentPosition = () => {
     let activeEditor = vscode.window.activeTextEditor;
 
@@ -73,6 +137,7 @@ export class UiSketcherWebview {
     }
 
     if (activeEditor) {
+      this.lastTextEditor = activeEditor;
       this.lastDocument = activeEditor.document;
       this.lastCursorPosition = activeEditor.selection.active;
       return true;
@@ -91,15 +156,15 @@ export class UiSketcherWebview {
 
   private handleMessage = async (message: {
     command: "tldraw:export";
-    payload: { base64: string };
+    payload: { base64: string; imageTexts: string };
   }) => {
     this.logChannel.appendLine(
       `UI Sketcher: Received message with command ${message.command}`,
     );
     switch (message.command) {
       case "tldraw:export":
-        const { base64 } = message.payload;
-        await this.createCompletion(base64);
+        const { base64, imageTexts } = message.payload;
+        await this.createCompletion(base64, imageTexts);
         return;
       default:
         vscode.window.showErrorMessage(
@@ -108,12 +173,22 @@ export class UiSketcherWebview {
     }
   };
 
-  private createCompletion = async (base64Image: string) => {
+  private createCompletion = async (
+    base64Image: string,
+    imageTexts: string,
+  ) => {
     const apiToken = await this.context.secrets.get("OPENAI_API_KEY");
 
     if (!apiToken) {
       vscode.window.showErrorMessage(
         'UI Sketcher: Please set your Open AI API key first using "UI Sketcher: Set Open AI API Key" command',
+      );
+      return;
+    }
+
+    if (!this.lastDocument) {
+      vscode.window.showErrorMessage(
+        "UI Sketcher: Please open a text file before generating code",
       );
       return;
     }
@@ -124,29 +199,31 @@ export class UiSketcherWebview {
     const maxTokens = config.get<number>("maxTokens")!;
     const stack = config.get<string>("stack");
     const customInstructions = config.get<string>("customInstructions");
-    const includeFileInPrompt = config.get<boolean>("includeFileInPrompt")!;
-    const { preCode, postCode } = includeFileInPrompt
-      ? this.textAroundCursor()
-      : { preCode: undefined, postCode: undefined };
-    const filePath =
-      getRelativePathOfDocument(this.lastDocument) ?? "<undefined>";
-
-    if (filePath === "<undefined>")
-      this.logChannel.appendLine("UI Sketcher: Unable to get file name");
+    const fileContent = this.lastDocument.getText();
+    const filePath = getRelativePathOfDocument(this.lastDocument);
 
     try {
-      await uiToComponent(base64Image, {
+      let hasStarted = false;
+
+      const onChunk = async (text: string) => {
+        if (!hasStarted) {
+          await this.cleanFile();
+          hasStarted = true;
+        }
+
+        this.logChannel.append(text);
+        await this.insertText(text);
+      };
+
+      await uiToComponent({
+        base64Image,
         apiKey: apiToken,
         maxTokens,
         stack,
         customInstructions,
-        preCode,
-        postCode,
         filePath,
-        onChunk: async (text) => {
-          this.logChannel.append(text);
-          await this.insertText(text);
-        },
+        fileContent,
+        onChunk,
       });
     } catch (e: any) {
       vscode.window.showErrorMessage(
@@ -157,18 +234,6 @@ export class UiSketcherWebview {
     }
 
     this.logChannel.append("\n");
-  };
-
-  private textAroundCursor = (): { preCode?: string; postCode?: string } => {
-    if (!this.lastDocument || !this.lastCursorPosition)
-      return { preCode: undefined, postCode: undefined };
-
-    const text = this.lastDocument.getText();
-    const cursorOffset = this.lastDocument.offsetAt(this.lastCursorPosition);
-    const preCode = text.substring(0, cursorOffset);
-    const postCode = text.substring(cursorOffset);
-
-    return { preCode, postCode };
   };
 
   private getNonce() {
@@ -205,9 +270,25 @@ export class UiSketcherWebview {
       ),
     );
 
+    const config = vscode.workspace.getConfiguration("ui-sketcher");
+    const previewUrl = config.get<string>("previewUrl");
+    const partialRenderEnabled = config.get<boolean>("partialRenderEnabled");
+    // Need to grab scheme + host and trailing slash
+    const previewHost = previewUrl?.match(/^.*\/\/[^\/]+/)?.[0];
+    const hidePreviewOnStart =
+      this.lastDocument && this.lastDocument.getText().length === 0;
+    const relativePath = getRelativePathOfDocument(this.lastDocument!);
+
     const nonce = this.getNonce();
 
+    this.logChannel.appendLine("UI Sketcher: Getting webview content");
+
     return ejs.render(sketcherHtml, {
+      previewHost,
+      previewUrl,
+      relativePath,
+      partialRenderEnabled,
+      displayPreviewOnStart: !hidePreviewOnStart,
       indexUri,
       vendorsUri,
       stylesUri,

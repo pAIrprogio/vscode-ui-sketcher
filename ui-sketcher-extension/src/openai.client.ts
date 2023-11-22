@@ -1,14 +1,20 @@
 import OpenAI from "openai";
+import {
+  ChatCompletionContentPart,
+  ChatCompletionMessageParam,
+} from "openai/resources";
+import { systemPrompt } from "./openai.prompts";
 
 type UITransformerConfig = {
   apiKey: string;
+  base64Image: string;
+  imageTexts?: string | null;
   maxTokens: number;
   onChunk?: (chunk: string) => Promise<void>;
   stack?: string;
-  customInstructions?: string;
+  customInstructions?: string | null;
   filePath: string;
-  preCode?: string;
-  postCode?: string;
+  fileContent?: string | null;
 };
 
 const START_QUOTE_REGEX = /```[^\n]*\n/;
@@ -17,78 +23,93 @@ const FULL_END_QUOTE_REGEX = /\n```/;
 const REMOVE_PREFIX_REGEX = /.*```[^\n]*\n/s;
 const REMOVE_SUFFIX_REGEX = /\n```.*/s;
 
-export const uiToComponent = async (
-  base64Image: string,
-  {
-    apiKey,
-    stack,
-    onChunk,
-    maxTokens,
-    customInstructions = "",
-    filePath,
-    preCode,
-    postCode,
-  }: UITransformerConfig,
-) => {
+export const uiToComponent = async ({
+  base64Image,
+  imageTexts,
+  apiKey,
+  stack,
+  onChunk,
+  maxTokens,
+  customInstructions = "",
+  filePath,
+  fileContent,
+}: UITransformerConfig) => {
   const client = new OpenAI({ apiKey });
+  const messages: ChatCompletionMessageParam[] = [];
 
   // SYSTEM PROMPT
 
-  let systemPrompt = `You are an expert frontend developer.
-Your task is to integrate mockups.
-Only respond with the code output inside a code block. Do not include any other text.`;
-
-  if (customInstructions) {
-    systemPrompt += "\n" + customInstructions;
-  }
+  messages.push({
+    role: "system",
+    content: customInstructions
+      ? systemPrompt + "\n\n" + customInstructions
+      : systemPrompt,
+  });
 
   // USER PROMPT
 
-  let userPrompt = `Turn this image into code`;
+  const userMessageParts: ChatCompletionContentPart[] = [];
 
-  if (stack && stack.length > 0) {
-    userPrompt += "\n\nThe project's stack is: " + stack;
+  userMessageParts.push({
+    type: "image_url",
+    image_url: {
+      url: base64Image,
+      detail: "high",
+    },
+  });
+
+  userMessageParts.push({
+    type: "text",
+    text: "Turn these wireframes into code",
+  });
+
+  if (imageTexts && imageTexts.length > 0)
+    userMessageParts.push({
+      type: "text",
+      text: "The wireframes text is: \n" + imageTexts,
+    });
+  else
+    userMessageParts.push({
+      type: "text",
+      text: "The text could be extracted from the wireframes.",
+    });
+
+  if (stack && stack.length > 0)
+    userMessageParts.push({
+      type: "text",
+      text: "The project's stack is: " + stack,
+    });
+
+  userMessageParts.push({
+    type: "text",
+    text: "The file path is: " + filePath,
+  });
+
+  if (fileContent && fileContent.length > 0) {
+    userMessageParts.push({
+      type: "text",
+      text: "The current file content is: \n```\n" + fileContent + "\n```",
+    });
+  } else {
+    userMessageParts.push({
+      type: "text",
+      text: "The file is currently empty.",
+    });
   }
 
-  userPrompt += "\n\nThe file path is: " + filePath;
-
-  if (preCode && postCode) {
-    userPrompt += `
-    
-The current file content is:
-\`\`\`
-${preCode}/* THE OUTPUT CODE WILL BE WRITTEN HERE */${postCode}
-\`\`\`
-`;
-  }
+  messages.push({
+    role: "user",
+    content: userMessageParts,
+  });
 
   const response = await client.chat.completions.create({
     model: "gpt-4-vision-preview",
     stream: true,
     max_tokens: maxTokens,
-    messages: [
-      {
-        role: "system",
-        content: systemPrompt,
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: userPrompt,
-          },
-          {
-            type: "image_url",
-            image_url: {
-              url: base64Image,
-            },
-          },
-        ],
-      },
-    ],
+    messages: messages,
   });
 
+  // #region BUFFER
   let buffer = "";
   let output = "";
   let hasCodeStarted = false;
@@ -139,6 +160,7 @@ ${preCode}/* THE OUTPUT CODE WILL BE WRITTEN HERE */${postCode}
     if (onChunk) await onChunk(buffer);
     buffer = "";
   }
+  // #endregion
 
   return output;
 };

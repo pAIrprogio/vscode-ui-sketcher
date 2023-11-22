@@ -1,11 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 
-export function getRelativePathOfDocument(
-  document?: vscode.TextDocument | null,
-) {
-  if (!document) return null;
-
+export function getRelativePathOfDocument(document: vscode.TextDocument) {
   const documentPath = document.uri.fsPath;
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
