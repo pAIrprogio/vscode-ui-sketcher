@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.1.2] - 2023-22-09
+
+### Fixed
+
+- Prevent panel unmount from deleting the extension's state
+
 ## [1.1.1] - 2023-22-09
 
 ### Added

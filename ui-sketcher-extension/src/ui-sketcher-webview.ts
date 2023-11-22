@@ -58,13 +58,6 @@ export class UiSketcherWebview {
       path.join(this.context.extensionPath, "images", "icon.png"),
     );
 
-    this.panel.onDidDispose(() => {
-      this.panel = undefined;
-      this.lastTextEditor = undefined;
-      this.lastDocument = undefined;
-      this.lastCursorPosition = undefined;
-    });
-
     this.panel.webview.html = this.getWebviewContent();
     this.panel.webview.onDidReceiveMessage(this.handleMessage);
     this.logChannel.appendLine("UI Sketcher: Panel opened");
