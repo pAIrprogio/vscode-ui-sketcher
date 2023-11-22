@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased] - 2023-22-09
+## [1.1.0] - 2023-22-09
 
 ### Added
 
@@ -15,6 +15,7 @@
 ### Changed
 
 - Use `vscode.workspace.getWorkspaceFolder` to find the active file workspace folder
+- Switched from Sawyer's implementation to [make-real](https://github.com/tldraw/make-real/tree/main)'s one
 - Canvas state is now based on the file currently opened in the editor
 
 ### Fixed
