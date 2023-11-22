@@ -6,6 +6,7 @@
 
 - If shapes are selected, the "Make real" button will only use those shapes
 - Display a preview iframe with the `ui-sketcher.previewUrl` setting
+- Min 3s loading by default on "Make real" button to prevent double click
 
 ### Changed
 

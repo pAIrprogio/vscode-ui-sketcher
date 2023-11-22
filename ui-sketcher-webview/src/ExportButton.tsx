@@ -10,7 +10,10 @@ export const ExportButton = () => {
   const onClick = async () => {
     setLoading(true);
     await makeReal(editor);
-    setLoading(false);
+    setTimeout(() => {
+      // TODO: Fake loading to prevent double clicks, to improve
+      setLoading(false);
+    }, 3000);
   };
 
   return (
