@@ -272,6 +272,7 @@ export class UiSketcherWebview {
 
     const config = vscode.workspace.getConfiguration("ui-sketcher");
     const previewUrl = config.get<string>("previewUrl");
+    const partialRenderEnabled = config.get<boolean>("partialRenderEnabled");
     // Need to grab scheme + host and trailing slash
     const previewHost = previewUrl?.match(/^.*\/\/[^\/]+/)?.[0];
     const hidePreviewOnStart =
@@ -286,6 +287,7 @@ export class UiSketcherWebview {
       previewHost,
       previewUrl,
       relativePath,
+      partialRenderEnabled,
       displayPreviewOnStart: !hidePreviewOnStart,
       indexUri,
       vendorsUri,

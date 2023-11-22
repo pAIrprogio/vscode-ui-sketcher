@@ -1,9 +1,12 @@
 import { Editor, getSvgAsImage } from "@tldraw/tldraw";
 import { sendMessage } from "./messageBus";
 
-export async function sendExport(editor: Editor) {
-  // Todo: use all available shapes
-  let selectedShapes = editor.getSelectedShapes();
+export async function sendExport(
+  editor: Editor,
+  partialRenderEnabled: boolean
+) {
+  // TODO: clean this up, partialRenderEnabled shouldn't be passed in
+  let selectedShapes = partialRenderEnabled ? editor.getSelectedShapes() : [];
 
   if (selectedShapes.length === 0)
     selectedShapes = editor.getCurrentPageShapes();

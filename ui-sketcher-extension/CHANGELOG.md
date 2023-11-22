@@ -5,6 +5,7 @@
 ### Added
 
 - Display a preview iframe with the `ui-sketcher.previewUrl` setting
+- Render selection only by enabling the `ui-sketcher.partialRenderEnabled` setting
 - Panel will close if the active file is closed (state remains saved)
 - Opening the panel from a different file will reopen the webview with the new file
 - If shapes are selected, the "Make real" button will only use those shapes

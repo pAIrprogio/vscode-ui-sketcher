@@ -6,6 +6,8 @@ import { sendExport } from "./makeReal";
 
 export const useMakeReal = () => {
   const [previewShapeId] = useState(() => createShapeId("preview-frame"));
+  const [partialRenderEnabled] = useState(window.partialRenderEnabled || false);
+
   const [previewUrl] = useState(
     window.previewUrl && window.previewUrl + "?filePath=" + window.relativePath
   );
@@ -13,6 +15,7 @@ export const useMakeReal = () => {
   const [displayPreviewOnStart] = useState(
     window.displayPreviewOnStart || false
   );
+
   const [persistanceKey] = useState(window.relativePath);
 
   const displayPreview = useCallback(
@@ -25,13 +28,14 @@ export const useMakeReal = () => {
 
   const makeReal = useCallback(
     async (editor: Editor) => {
-      await sendExport(editor);
+      await sendExport(editor, partialRenderEnabled);
       displayPreview(editor);
     },
-    [displayPreview]
+    [displayPreview, partialRenderEnabled]
   );
 
   return {
+    partialRenderEnabled,
     displayPreviewOnStart,
     displayPreview,
     makeReal,
