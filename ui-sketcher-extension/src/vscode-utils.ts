@@ -7,19 +7,9 @@ export function getRelativePathOfDocument(
   if (!document) return null;
 
   const documentPath = document.uri.fsPath;
-  const workspaceFolders = vscode.workspace.workspaceFolders;
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
 
-  if (!workspaceFolders) return documentPath;
+  if (!workspaceFolder) return documentPath;
 
-  for (const folder of workspaceFolders) {
-    const workspacePath = folder.uri.fsPath;
-
-    // Check if the document path starts with the workspace path
-    // TODO: won't be top notch if the root folder is the first workspace folder
-    if (documentPath.startsWith(workspacePath)) {
-      return path.relative(workspacePath, documentPath);
-    }
-  }
-
-  return documentPath;
+  return path.relative(workspaceFolder.uri.fsPath, documentPath);
 }
