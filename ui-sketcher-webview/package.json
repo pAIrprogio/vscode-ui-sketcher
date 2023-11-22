@@ -10,10 +10,20 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tldraw/tldraw": "2.0.0-alpha.17",
+    "@tldraw/tldraw": "2.0.0-canary.ba4091c59418",
     "canvas-size": "^1.2.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@tldraw/editor": "2.0.0-canary.ba4091c59418",
+      "@tldraw/state": "2.0.0-canary.ba4091c59418",
+      "@tldraw/store": "2.0.0-canary.ba4091c59418",
+      "@tldraw/tlschema": "2.0.0-canary.ba4091c59418",
+      "@tldraw/utils": "2.0.0-canary.ba4091c59418",
+      "@tldraw/validate": "2.0.0-canary.ba4091c59418"
+    }
   },
   "devDependencies": {
     "@types/canvas-size": "^1.2.2",
