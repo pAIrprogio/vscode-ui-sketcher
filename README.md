@@ -2,7 +2,7 @@
 
 Turn rough sketches into UI code
 
-https://github.com/pAIrprogio/vscode-ui-sketcher/assets/1863461/9a4b482b-add3-4820-9406-3c16870a180b
+https://github.com/pAIrprogio/vscode-ui-sketcher/assets/1863461/b9f1a1ac-00c9-4c96-bbd0-de15c0e20db8
 
 ## Download
 
