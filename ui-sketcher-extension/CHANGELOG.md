@@ -11,6 +11,15 @@
 ### Changed
 
 - Use `vscode.workspace.getWorkspaceFolder` to find the active file workspace folder
+- Canvas state is now based on the file currently opened in the editor
+
+### Fixed
+
+- Reveal panel if already opened
+
+### Removed
+
+- `ui-sketcher.includeFileInPrompt` setting
 
 ## [1.0.5] - 2023-21-09
 

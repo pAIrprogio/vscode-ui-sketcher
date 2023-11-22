@@ -40,11 +40,6 @@
           "type": "string",
           "description": "Custom instructions to include when generating code"
         },
-        "ui-sketcher.includeFileInPrompt": {
-          "type": "boolean",
-          "default": false,
-          "description": "Whether to include the whole file in the prompt"
-        },
         "ui-sketcher.maxTokens": {
           "type": "number",
           "default": 1000,
