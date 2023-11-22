@@ -1,6 +1,6 @@
 # UI Sketcher
 
-Turn rough sketches into UI code
+Turn sketches into UI code
 
 https://github.com/pAIrprogio/vscode-ui-sketcher/assets/1863461/b9f1a1ac-00c9-4c96-bbd0-de15c0e20db8
 

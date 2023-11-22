@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.1.1] - 2023-22-09
+
+### Added
+
+- Preview iframe can now be interacted with
+
 ## [1.1.0] - 2023-22-09
 
 ### Added

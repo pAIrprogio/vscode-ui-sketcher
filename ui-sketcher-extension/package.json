@@ -1,14 +1,14 @@
 {
   "name": "ui-sketcher",
   "displayName": "UI Sketcher",
-  "description": "Turn rough UI sketches into code with the magic of GPT-4 Vision",
+  "description": "Turn UI sketches into code with the magic of GPT-4 Vision",
   "publisher": "pAIrprog",
   "repository": {
     "type": "git",
     "url": "https://github.com/pAIrprogio/vscode-ui-sketcher"
   },
   "license": "MIT",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.84.0"
