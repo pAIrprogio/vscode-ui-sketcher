@@ -1,63 +1,28 @@
 import { useEditor } from "@tldraw/tldraw";
 import { useState } from "react";
-import { getSvgAsImage } from "./lib/getSvgAsImage";
-import { blobToBase64 } from "./lib/blobToBase64";
-import { sendMessage } from "./lib/messageBus";
+import { useMakeReal } from "./lib/useMakeReal";
 
 export const ExportButton = () => {
   const editor = useEditor();
+  const { makeReal } = useMakeReal();
   const [loading, setLoading] = useState(false);
+
+  const onClick = async () => {
+    setLoading(true);
+    await makeReal(editor);
+    setLoading(false);
+  };
 
   return (
     <button
-      onClick={async (e) => {
-        setLoading(true);
-        try {
-          e.preventDefault();
-
-          const svg = await editor.getSvg(
-            Array.from(editor.currentPageShapeIds)
-          );
-
-          if (!svg) {
-            console.error("Failed to grab svg");
-            return;
-          }
-
-          console.debug("UI-Sketcher: grabbed svg");
-
-          const png = await getSvgAsImage(svg, {
-            type: "png",
-            quality: 1,
-            scale: 1,
-          });
-
-          console.debug("UI-Sketcher: created png");
-
-          const dataUrl = (await blobToBase64(png!)) as string;
-
-          console.debug("UI-Sketcher: computed base64");
-
-          sendMessage({
-            command: "tldraw:export",
-            payload: { base64: dataUrl },
-          });
-
-          console.debug("UI-Sketcher: sent message");
-        } finally {
-          setLoading(false);
-        }
-      }}
-      className="fixed right-4 top-4 sm:bottom-4 sm:top-auto bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      style={{ zIndex: 1000 }}
+      onClick={onClick}
+      disabled={loading}
+      className="p-2 cursor-pointer"
+      style={{ zIndex: 100000, pointerEvents: "all" }}
     >
-      {loading ? (
-        <div className="flex justify-center items-center ">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-        </div>
-      ) : (
-        "Make Real"
-      )}
+      <div className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-60">
+        {loading ? "Casting magic" : "Make Real"}
+      </div>
     </button>
   );
 };

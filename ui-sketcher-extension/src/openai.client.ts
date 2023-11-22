@@ -82,6 +82,7 @@ ${preCode}/* THE OUTPUT CODE WILL BE WRITTEN HERE */${postCode}
             type: "image_url",
             image_url: {
               url: base64Image,
+              detail: "high",
             },
           },
         ],

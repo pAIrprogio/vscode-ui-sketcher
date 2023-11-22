@@ -4,6 +4,7 @@
 
 ### Added
 
+- If shapes are selected, the "Make real" button will only use those shapes
 - Display a preview iframe with the `ui-sketcher.previewUrl` setting
 
 ### Changed
