@@ -3,9 +3,11 @@ import sketcherHtml from "./ui-sketcher.html";
 import * as ejs from "ejs";
 import { uiToComponent } from "./openai.client";
 import { getRelativePathOfDocument } from "./vscode-utils";
+import path = require("path");
 
 export class UiSketcherWebview {
   panel: vscode.WebviewPanel | undefined;
+  lastTextEditor: vscode.TextEditor | undefined;
   lastDocument: vscode.TextDocument | undefined;
   lastCursorPosition: vscode.Position | undefined;
 
@@ -17,27 +19,53 @@ export class UiSketcherWebview {
   public register = () => {
     return this.context.subscriptions.push(
       vscode.commands.registerCommand("ui-sketcher.open", this.open),
+      this.watchActiveDocumentClose(),
     );
+  };
+
+  private watchActiveDocumentClose = () => {
+    return vscode.workspace.onDidCloseTextDocument((document) => {
+      if (this.lastDocument === document && this.panel) {
+        this.panel.dispose();
+        this.panel = undefined;
+        this.lastTextEditor = undefined;
+        this.lastDocument = undefined;
+        this.lastCursorPosition = undefined;
+      }
+    });
   };
 
   private open = () => {
     if (this.isOpen) {
       this.panel?.reveal(vscode.ViewColumn.Beside);
-      return;
+      if (this.lastTextEditor === vscode.window.activeTextEditor) return;
     }
 
     this.saveCurrentPosition();
+    const panelName = getRelativePathOfDocument(this.lastDocument!);
+    if (this.isOpen) this.panel!.dispose();
+
     this.panel = vscode.window.createWebviewPanel(
       "uiSketcher",
-      "UI Sketcher",
+      panelName,
       vscode.ViewColumn.Beside,
       {
         enableScripts: true,
       },
     );
 
-    this.panel.webview.html = this.getWebviewContent();
+    this.panel.iconPath = vscode.Uri.file(
+      path.join(this.context.extensionPath, "images", "icon.png"),
+    );
 
+    this.panel.onDidDispose(() => {
+      this.panel = undefined;
+      this.lastTextEditor = undefined;
+      this.lastDocument = undefined;
+      this.lastCursorPosition = undefined;
+    });
+
+    this.panel.webview.html = this.getWebviewContent();
     this.panel.webview.onDidReceiveMessage(this.handleMessage);
     this.logChannel.appendLine("UI Sketcher: Panel opened");
   };
@@ -109,6 +137,7 @@ export class UiSketcherWebview {
     }
 
     if (activeEditor) {
+      this.lastTextEditor = activeEditor;
       this.lastDocument = activeEditor.document;
       this.lastCursorPosition = activeEditor.selection.active;
       return true;

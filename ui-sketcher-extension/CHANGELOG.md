@@ -4,9 +4,12 @@
 
 ### Added
 
-- If shapes are selected, the "Make real" button will only use those shapes
 - Display a preview iframe with the `ui-sketcher.previewUrl` setting
+- Panel will close if the active file is closed (state remains saved)
+- Opening the panel from a different file will reopen the webview with the new file
+- If shapes are selected, the "Make real" button will only use those shapes
 - Min 3s loading by default on "Make real" button to prevent double click
+- UI Sketcher icon on canvas panels
 
 ### Changed
 
