@@ -1,12 +1,26 @@
-# Setup URL preview
+# Setup URL Preview
+
+## How it works
+
+- If the opened text file is not empty, the preview frame will display on open
+- If the opened text file is empty, the preview frame will display on save
+- The content should update when the file is saved
+
+## Quirks
+
+- It is recommended to lock the preview frame inside the editor (select the preview, then press `shift+L`) so that you can quickly erase the rest of the canvas on each iteration
+- It's always recommended to commit the setup locally in the project's `.vscode/settings.json` file to avoid switching between projects
 
 ## Standard
 
 - The preview url should accept a `filePath` query parameter
 - The preview page, should load the Component from the `filePath` query parameter dynamically and render it
-- The preview url should then be added to `ui-sketcher.previewUrl` in settings.json without any query parameters (e.g. `http://localhost:3000/preview`)
+- The preview page should have hot reloading / live reload enabled
+- The preview url should be added to `ui-sketcher.previewUrl` in settings.json without any query parameters (e.g. `http://localhost:3000/preview`)
 
----
+## Code
+
+To setup a preview page on your stack, use the links bellow to get sample code and specific instructions.
 
 | Stack                                                                                                             | Type     |
 | ----------------------------------------------------------------------------------------------------------------- | -------- |
