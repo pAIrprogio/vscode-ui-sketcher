@@ -1,5 +1,12 @@
 # Change Log
 
+## [1.1.3] - 2023-23-09
+
+## Fixed
+
+- Allow pasting images from clipboard
+- Allow embeddings from urls
+
 ## [1.1.2] - 2023-22-09
 
 ### Fixed
