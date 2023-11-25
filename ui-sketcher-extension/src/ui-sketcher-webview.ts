@@ -25,9 +25,8 @@ export class UiSketcherWebview {
 
   private watchActiveDocumentClose = () => {
     return vscode.workspace.onDidCloseTextDocument((document) => {
-      if (this.lastDocument === document && this.panel) {
-        this.panel.dispose();
-        this.panel = undefined;
+      if (this.lastDocument === document) {
+        if (this.panel) this.panel.dispose();
         this.lastTextEditor = undefined;
         this.lastDocument = undefined;
         this.lastCursorPosition = undefined;
@@ -58,6 +57,10 @@ export class UiSketcherWebview {
       path.join(this.context.extensionPath, "images", "icon.png"),
     );
 
+    this.panel.onDidDispose(() => {
+      this.panel = undefined;
+      this.logChannel.appendLine("UI Sketcher: Panel closed");
+    });
     this.panel.webview.html = this.getWebviewContent();
     this.panel.webview.onDidReceiveMessage(this.handleMessage);
     this.logChannel.appendLine("UI Sketcher: Panel opened");

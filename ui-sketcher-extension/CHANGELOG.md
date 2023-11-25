@@ -1,8 +1,14 @@
 # Change Log
 
+## [1.1.4] - 2023-26-09
+
+### Fixed
+
+- Error when closing the panel manually and closing the file after
+
 ## [1.1.3] - 2023-23-09
 
-## Fixed
+### Fixed
 
 - Allow pasting images from clipboard
 - Allow embeddings from urls
