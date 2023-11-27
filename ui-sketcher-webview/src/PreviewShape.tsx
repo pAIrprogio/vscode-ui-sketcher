@@ -1,4 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
+import { RefObject, createRef } from "react";
 import {
   BaseBoxShapeUtil,
   DefaultSpinner,
@@ -11,6 +12,7 @@ import {
   useValue,
   TLShapeId,
   createShapeId,
+  SvgExportContext,
 } from "@tldraw/tldraw";
 
 export type PreviewShape = TLBaseShape<
@@ -24,6 +26,7 @@ export type PreviewShape = TLBaseShape<
 
 export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
   static override type = "preview" as const;
+  private iframeRef: RefObject<HTMLIFrameElement>;
 
   getDefaultProps(): PreviewShape["props"] {
     return {
@@ -38,6 +41,57 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
   override canResize = (_shape: PreviewShape) => true;
   override canBind = (_shape: PreviewShape) => false;
   override canUnmount = () => false;
+  override toSvg(
+    shape: PreviewShape,
+    _ctx: SvgExportContext
+  ): SVGElement | Promise<SVGElement> {
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    // while screenshot is the same as the old one, keep waiting for a new one
+    return new Promise((resolve, _) => {
+      if (window === undefined) return resolve(g);
+
+      const windowListener = (event: MessageEvent) => {
+        if (event.data.screenshot && event.data?.shapeid === shape.id) {
+          const image = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "image"
+          );
+          image.setAttributeNS(
+            "http://www.w3.org/1999/xlink",
+            "href",
+            event.data.screenshot
+          );
+          image.setAttribute("width", shape.props.w.toString());
+          image.setAttribute("height", shape.props.h.toString());
+          g.appendChild(image);
+          window.removeEventListener("message", windowListener);
+          clearTimeout(timeOut);
+          resolve(g);
+        }
+      };
+
+      const timeOut = setTimeout(() => {
+        resolve(g);
+        window.removeEventListener("message", windowListener);
+      }, 2000);
+      window.addEventListener("message", windowListener);
+      //request new screenshot
+
+      if (this.iframeRef.current?.contentWindow) {
+        this.iframeRef.current.contentWindow.postMessage(
+          { action: "take-screenshot", shapeid: shape.id },
+          "*"
+        );
+      } else {
+        console.log("iframe not found or not accessible");
+      }
+    });
+  }
+
+  constructor(editor: Editor) {
+    super(editor);
+    this.iframeRef = createRef();
+  }
 
   override component(shape: PreviewShape) {
     const boxShadow = useValue(
@@ -74,6 +128,7 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
         ) : (
           <>
             <iframe
+              ref={this.iframeRef}
               src={source}
               width={toDomPrecision(shape.props.w)}
               height={toDomPrecision(shape.props.h)}
