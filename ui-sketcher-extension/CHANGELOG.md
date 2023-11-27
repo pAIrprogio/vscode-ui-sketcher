@@ -1,31 +1,38 @@
 # Change Log
 
-## [1.1.4] - 2023-26-09
+## [1.1.5] - 2023-11-28
+
+### Changed
+
+- Preview now requires the page to handle a window event and respond with a base64 screenshot. Please make sure to check the preview URL setup guide
+- The generated screenshot will now be included in the rendered result
+
+## [1.1.4] - 2023-11-26
 
 ### Fixed
 
 - Error when closing the panel manually and closing the file after
 
-## [1.1.3] - 2023-23-09
+## [1.1.3] - 2023-11-23
 
 ### Fixed
 
 - Allow pasting images from clipboard
 - Allow embeddings from urls
 
-## [1.1.2] - 2023-22-09
+## [1.1.2] - 2023-11-22
 
 ### Fixed
 
 - Prevent panel unmount from deleting the extension's state
 
-## [1.1.1] - 2023-22-09
+## [1.1.1] - 2023-11-22
 
 ### Added
 
 - Preview iframe can now be interacted with
 
-## [1.1.0] - 2023-22-09
+## [1.1.0] - 2023-11-22
 
 ### Added
 
@@ -51,7 +58,7 @@
 
 - `ui-sketcher.includeFileInPrompt` setting
 
-## [1.0.5] - 2023-21-09
+## [1.0.5] - 2023-11-21
 
 ### Added
 

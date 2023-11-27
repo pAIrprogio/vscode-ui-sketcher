@@ -15,6 +15,11 @@
 
 - The preview url should accept a `filePath` query parameter
 - The preview page, should load the Component from the `filePath` query parameter dynamically and render it
+- The preview page should be able to take a screenshot of itself and send it back
+  - It should listen for a `message` event in the shape of `{ action: 'take-screenshot', shapeid: string }`
+  - It should respond using `window.parent.postMessage({ screenshot: data, shapeid: event.data.shapeid }, '*');`
+  - If the screenshot is not sent back, after a timeout, a blank element will be rendered instead
+  - See the [sveltekit instructions](./setup-preview-url/sveltekit.md) for an example
 - The preview page should have hot reloading / live reload enabled
 - The preview url should be added to `ui-sketcher.previewUrl` in settings.json without any query parameters (e.g. `http://localhost:3000/preview`)
 

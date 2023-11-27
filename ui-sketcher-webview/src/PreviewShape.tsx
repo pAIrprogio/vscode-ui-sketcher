@@ -46,10 +46,12 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
     _ctx: SvgExportContext
   ): SVGElement | Promise<SVGElement> {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    // while screenshot is the same as the old one, keep waiting for a new one
-    return new Promise((resolve, _) => {
-      if (window === undefined) return resolve(g);
 
+    if (!this.iframeRef.current?.contentWindow) return g;
+
+    const contentWindow = this.iframeRef.current.contentWindow;
+
+    return new Promise((resolve, _) => {
       const windowListener = (event: MessageEvent) => {
         if (event.data.screenshot && event.data?.shapeid === shape.id) {
           const image = document.createElementNS(
@@ -61,8 +63,8 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
             "href",
             event.data.screenshot
           );
-          image.setAttribute("width", shape.props.w.toString());
-          image.setAttribute("height", shape.props.h.toString());
+          image.setAttribute("width", (shape.props.w * 2).toString());
+          image.setAttribute("height", (shape.props.h * 2).toString());
           g.appendChild(image);
           window.removeEventListener("message", windowListener);
           clearTimeout(timeOut);
@@ -77,14 +79,10 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
       window.addEventListener("message", windowListener);
       //request new screenshot
 
-      if (this.iframeRef.current?.contentWindow) {
-        this.iframeRef.current.contentWindow.postMessage(
-          { action: "take-screenshot", shapeid: shape.id },
-          "*"
-        );
-      } else {
-        console.log("iframe not found or not accessible");
-      }
+      contentWindow.postMessage(
+        { action: "take-screenshot", shapeid: shape.id },
+        "*"
+      );
     });
   }
 

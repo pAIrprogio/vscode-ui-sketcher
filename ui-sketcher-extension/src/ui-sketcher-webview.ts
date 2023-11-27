@@ -160,6 +160,7 @@ export class UiSketcherWebview {
     switch (message.command) {
       case "tldraw:export":
         const { base64, imageTexts } = message.payload;
+        // vscode.env.clipboard.writeText(base64); // Copies base64 to clipboard for debugging
         await this.createCompletion(base64, imageTexts);
         return;
       default:
