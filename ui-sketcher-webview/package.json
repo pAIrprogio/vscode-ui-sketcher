@@ -12,6 +12,7 @@
   "dependencies": {
     "@tldraw/tldraw": "2.0.0-canary.ba4091c59418",
     "canvas-size": "^1.2.6",
+    "daisyui": "^4.4.19",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
@@ -40,6 +41,7 @@
     "eslint-plugin-react-refresh": "^0.4.3",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.9",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",

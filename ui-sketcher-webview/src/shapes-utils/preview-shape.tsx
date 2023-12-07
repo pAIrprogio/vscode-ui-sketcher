@@ -43,7 +43,7 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
   override canUnmount = () => false;
   override toSvg(
     shape: PreviewShape,
-    _ctx: SvgExportContext
+    _ctx: SvgExportContext,
   ): SVGElement | Promise<SVGElement> {
     const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
@@ -56,12 +56,12 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
         if (event.data.screenshot && event.data?.shapeid === shape.id) {
           const image = document.createElementNS(
             "http://www.w3.org/2000/svg",
-            "image"
+            "image",
           );
           image.setAttributeNS(
             "http://www.w3.org/1999/xlink",
             "href",
-            event.data.screenshot
+            event.data.screenshot,
           );
           image.setAttribute("width", (shape.props.w * 2).toString());
           image.setAttribute("height", (shape.props.h * 2).toString());
@@ -81,7 +81,7 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
 
       contentWindow.postMessage(
         { action: "take-screenshot", shapeid: shape.id },
-        "*"
+        "*",
       );
     });
   }
@@ -98,7 +98,7 @@ export class PreviewShapeUtil extends BaseBoxShapeUtil<PreviewShape> {
         const rotation = this.editor.getShapePageTransform(shape)!.rotation();
         return getRotatedBoxShadow(rotation);
       },
-      [this.editor]
+      [this.editor],
     );
 
     const isLoading = false;
@@ -210,7 +210,7 @@ function getRotatedBoxShadow(rotation: number) {
 export const displayPreviewShape = (
   editor: Editor,
   shapeId: string | TLShapeId,
-  source: string
+  source: string,
 ) => {
   const id = typeof shapeId === "string" ? createShapeId(shapeId) : shapeId;
   if (editor.getShape(id)) return;
