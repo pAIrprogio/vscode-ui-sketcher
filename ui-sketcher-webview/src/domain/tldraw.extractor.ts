@@ -1,15 +1,19 @@
 import { Editor, getSvgAsImage } from "@tldraw/tldraw";
-import { sendMessage } from "./messageBus";
 
-export async function sendExport(
+export async function extractImageAndText(editor: Editor, selectionOnly: boolean) {
+  const [base64, text] = await Promise.all([
+    extractImage(editor, selectionOnly),
+    extractText(editor, selectionOnly),
+  ]);
+  return { base64, text };
+}
+
+export async function extractImage(
   editor: Editor,
-  partialRenderEnabled: boolean
+  selectionOnly: boolean
 ) {
   // TODO: clean this up, partialRenderEnabled shouldn't be passed in
-  let selectedShapes = partialRenderEnabled ? editor.getSelectedShapes() : [];
-
-  if (selectedShapes.length === 0)
-    selectedShapes = editor.getCurrentPageShapes();
+  const selectedShapes = selectionOnly ? editor.getSelectedShapes() : editor.getCurrentPageShapes();
 
   const svg = await editor.getSvg(selectedShapes);
   if (!svg) throw Error(`Could not get the SVG.`);
@@ -21,12 +25,8 @@ export async function sendExport(
   });
 
   const base64 = await blobToBase64(blob!);
-  const imageTexts = getSelectionAsText(editor);
 
-  await sendMessage({
-    command: "tldraw:export",
-    payload: { base64, imageTexts },
-  });
+  return base64;
 }
 
 export function blobToBase64(blob: Blob): Promise<string> {
@@ -37,11 +37,8 @@ export function blobToBase64(blob: Blob): Promise<string> {
   });
 }
 
-function getSelectionAsText(editor: Editor) {
-  let selectedShapeIds = editor.getSelectedShapeIds();
-
-  if (selectedShapeIds.length === 0)
-    selectedShapeIds = Array.from(editor.getCurrentPageShapeIds());
+function extractText(editor: Editor, selectionOnly: boolean) {
+  const selectedShapeIds = selectionOnly ? editor.getSelectedShapeIds() : Array.from(editor.getCurrentPageShapeIds());
 
   const selectedShapeDescendantIds =
     editor.getShapeAndDescendantIds(selectedShapeIds);
