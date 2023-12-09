@@ -6,13 +6,13 @@ import { ShareZone } from "./share-zone/share-zone";
 import { isMermaid } from "./tools/mermaid/mermaid.utils";
 
 const onMount: TLOnMountHandler = (editor) => {
-  editor.registerExternalContentHandler("embed", async (asset) => {
+  editor.registerExternalContentHandler("embed", async (_asset) => {
     alert("embed");
   });
-  editor.registerExternalContentHandler("files", async (asset) => {
+  editor.registerExternalContentHandler("files", async (_asset) => {
     alert("files");
   });
-  editor.registerExternalContentHandler("url", async (asset) => {
+  editor.registerExternalContentHandler("url", async (_asset) => {
     alert("url");
   });
   // editor.registerExternalContentHandler("svg-text", async (asset) => {

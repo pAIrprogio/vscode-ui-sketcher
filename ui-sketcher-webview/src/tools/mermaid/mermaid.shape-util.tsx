@@ -9,7 +9,7 @@ import {
 import { useBoxShadow } from "../use-box-shadow.hook";
 
 import mermaid from "mermaid";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { mermaidConfig } from "./mermaid.config";
 
 mermaid.initialize(mermaidConfig);
