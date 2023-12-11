@@ -78,9 +78,15 @@ importers:
       firacode:
         specifier: ^6.2.0
         version: 6.2.0
+      iter-tools:
+        specifier: ^7.5.3
+        version: 7.5.3
       mermaid:
         specifier: ^10.6.1
         version: 10.6.1
+      openai:
+        specifier: ^4.16.1
+        version: 4.16.1
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -1804,12 +1810,13 @@ packages:
   /@types/node-fetch@2.6.9:
     resolution: {integrity: sha512-bQVlnMLFJ2d35DkPNjEPmd9ueO/rh5EiaZt2bhqiSarPjZIuIV6bPQVqcrEyvNo+AfTrRGVazle1tl597w3gfA==}
     dependencies:
-      '@types/node': 16.18.61
+      '@types/node': 20.9.0
       form-data: 4.0.0
     dev: false
 
   /@types/node@16.18.61:
     resolution: {integrity: sha512-k0N7BqGhJoJzdh6MuQg1V1ragJiXTh8VUBAZTWjJ9cUq23SG0F0xavOwZbhiP4J3y20xd6jxKx+xNUhkMAi76Q==}
+    dev: true
 
   /@types/node@18.18.9:
     resolution: {integrity: sha512-0f5klcuImLnG4Qreu9hPj/rEfFq6YRc5n2mAjSsH+ec/mJL+3voBH0+8T7o8RpFjH7ovc+TRsL/c7OYIQsPTfQ==}
@@ -1821,7 +1828,6 @@ packages:
     resolution: {integrity: sha512-nekiGu2NDb1BcVofVcEKMIwzlx4NjHlcjhoxxKBNLtz15Y1z7MYf549DFvkHSId02Ax6kGwWntIBPC3l/JZcmw==}
     dependencies:
       undici-types: 5.26.5
-    dev: true
 
   /@types/prop-types@15.7.10:
     resolution: {integrity: sha512-mxSnDQxPqsZxmeShFH+uwQ4kO4gcJcGahjjMFeLbKE95IAZiiZyiEepGZjtXJ7hN/yfu0bu9xN2ajcU0JcxX6A==}
@@ -3891,6 +3897,12 @@ packages:
     resolution: {integrity: sha512-WhB9zCku7EGTj/HQQRz5aUQEUeoQZH2bWcltRErOpymJ4boYE6wL9Tbr23krRPSZ+C5zqNSrSw+Cc7sZZ4b7vg==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /iter-tools@7.5.3:
+    resolution: {integrity: sha512-iEcHpgM9cn6tsI5MewqxyEega9KPbIDytQTEnu6c0MtlQQhQFofssYuRqxCarZgUdzliepRZPwwwflE4wAIjaA==}
+    dependencies:
+      '@babel/runtime': 7.23.2
+    dev: false
 
   /jake@10.8.7:
     resolution: {integrity: sha512-ZDi3aP+fG/LchyBzUM804VjddnwfSfsdeYkwt8NcbKRvo4rFkjhs456iLFn3k2ZUWvNe4i48WACDbza8fhq2+w==}

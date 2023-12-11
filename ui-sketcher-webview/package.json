@@ -14,7 +14,9 @@
     "canvas-size": "^1.2.6",
     "daisyui": "^4.4.19",
     "firacode": "^6.2.0",
+    "iter-tools": "^7.5.3",
     "mermaid": "^10.6.1",
+    "openai": "^4.16.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "valtio": "^1.12.1"
