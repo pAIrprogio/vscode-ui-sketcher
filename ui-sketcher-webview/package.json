@@ -7,10 +7,13 @@
     "dev": "vite",
     "build": "tsc && vite build --emptyOutDir",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@tldraw/tldraw": "2.0.0-canary.ba4091c59418",
+    "@types/react-syntax-highlighter": "^15.5.11",
     "canvas-size": "^1.2.6",
     "daisyui": "^4.4.19",
     "firacode": "^6.2.0",
@@ -18,7 +21,11 @@
     "mermaid": "^10.6.1",
     "openai": "^4.16.1",
     "react": "^18.2.0",
+    "react-bootstrap-icons": "^1.10.3",
     "react-dom": "^18.2.0",
+    "react-markdown": "^9.0.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "remark-gfm": "^4.0.0",
     "valtio": "^1.12.1"
   },
   "pnpm": {
@@ -32,6 +39,15 @@
     }
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^7.6.4",
+    "@storybook/addon-interactions": "^7.6.4",
+    "@storybook/addon-links": "^7.6.4",
+    "@storybook/addon-onboarding": "^1.0.10",
+    "@storybook/blocks": "^7.6.4",
+    "@storybook/react": "^7.6.4",
+    "@storybook/react-vite": "^7.6.4",
+    "@storybook/test": "^7.6.4",
+    "@tailwindcss/typography": "^0.5.10",
     "@types/canvas-size": "^1.2.2",
     "@types/node": "^20.9.0",
     "@types/react": "^18.2.15",
@@ -44,9 +60,12 @@
     "eslint": "^8.45.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
+    "eslint-plugin-storybook": "^0.6.15",
+    "eslint-plugin-valtio": "^0.6.2",
     "postcss": "^8.4.31",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.9",
+    "storybook": "^7.6.4",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",

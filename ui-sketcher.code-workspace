@@ -1,17 +1,18 @@
 {
   "folders": [
-	{
-		"path": "."
-	},
-	{
-		"path": "ui-sketcher-webview"
-	},
-	{
-		"path": "ui-sketcher-extension"
-	}
-],
+    {
+      "path": "."
+    },
+    {
+      "path": "ui-sketcher-webview"
+    },
+    {
+      "path": "ui-sketcher-extension"
+    }
+  ],
   "settings": {
     "typescript.tsc.autoDetect": "off",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "files.associations": { "*.css": "tailwindcss" }
   }
 }

@@ -18,3 +18,12 @@ body {
 .btn {
   @apply rounded-lg;
 }
+
+.textarea:focus {
+  @apply outline-none;
+}
+
+.prose pre {
+  @apply m-0;
+  @apply p-0;
+}

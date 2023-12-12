@@ -3,6 +3,7 @@ import { zip, map, toArray } from "iter-tools";
 import { AssistantCreateParams } from "openai/resources/beta/assistants/assistants.mjs";
 
 type PromiseValue<T> = T extends Promise<infer U> ? U : never;
+type AsyncGeneratorValue<T> = T extends AsyncGenerator<infer U, any, any> ? U : never;
 
 const defaultErrorFormater = (error: any) => {
   if (typeof error === "string") return { success: false, error };
@@ -13,14 +14,11 @@ const defaultErrorFormater = (error: any) => {
 
 type ErrorFormaterFn = typeof defaultErrorFormater;
 
-const defaultSystemPrompt = `You're a senior developer at GAFA. Your objective is to assist the user into planning and executing on development tasks.
-When modifying files, read the file content with line numbers and use a git patch to apply the changes. Don't wait for confirmation before executing commands`;
-
 export type ToolFn = (...args: any[]) => Promise<any>;
 
 export type AssistantConfig = {
   openAIClient: OpenAI;
-  systemPrompt?: string;
+  systemPrompt: string;
   toolsSchema?: AssistantCreateParams.AssistantToolsFunction[];
   toolsFns?: {
     [key: string]: ToolFn;
@@ -30,7 +28,7 @@ export type AssistantConfig = {
 
 export const createAssistant = async (config: AssistantConfig) => {
   const openAIClient = config.openAIClient;
-  const systemPrompt = config.systemPrompt ?? defaultSystemPrompt;
+  const systemPrompt = config.systemPrompt;
   const toolsSchema = config.toolsSchema ?? [];
   const toolsFns = config.toolsFns ?? {};
   const errorFormater = config.errorFormater ?? defaultErrorFormater;
@@ -111,12 +109,21 @@ export type ThreadConfig = {
 export async function createThread(config: ThreadConfig) {
   const { assistant: defaultAssistant, openAIClient } = config;
   const openAIThread = await openAIClient.beta.threads.create({});
+  let currentCancel = async () => { }
 
+  /**
+   * Cancel the current run
+   */
+  const cancel = () => currentCancel();
+
+  /**
+   * Send a new message to the thread
+   */
   async function* sendMessage(text: string, assistant?: Assistant) {
     let run: OpenAI.Beta.Threads.Runs.Run;
     let isInterrupted = false;
 
-    const cancelRun = async () => {
+    currentCancel = async () => {
       isInterrupted = true;
       if (!run) return;
       await openAIClient.beta.threads.runs.cancel(openAIThread.id, run.id).catch(() => {
@@ -203,7 +210,10 @@ export async function createThread(config: ThreadConfig) {
   return {
     openAIThread,
     sendMessage,
+    cancel
   };
 }
 
 export type Thread = PromiseValue<ReturnType<typeof createThread>>;
+
+export type Message = AsyncGeneratorValue<ReturnType<Thread["sendMessage"]>>;
