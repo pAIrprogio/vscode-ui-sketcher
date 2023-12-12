@@ -16,15 +16,15 @@ export default {
     themes: [
       {
         tldraw: {
-          primary: "#0e00ff",
-          secondary: "#ff00ef",
-          accent: "#00d7ff",
+          primary: "#0766AD",
+          secondary: "#29ADB2",
+          accent: "#C5E898",
           neutral: "#030d10",
           "base-100": "#f5f5f4",
-          info: "#007cb6",
-          success: "#00f274",
-          warning: "#b38600",
-          error: "#ff7b98",
+          info: "#00efff",
+          success: "#00bf7b",
+          warning: "#ffa800",
+          error: "#ff324b",
         },
       },
     ],

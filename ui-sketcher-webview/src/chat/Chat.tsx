@@ -3,8 +3,15 @@ import RMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowDownCircleFill } from "react-bootstrap-icons";
+import {
+  FormEvent,
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { ArrowDownCircleFill, ArrowUpSquareFill } from "react-bootstrap-icons";
 
 function useLocal<T extends object | undefined>(input: T) {
   return useRef(proxy(input)).current as T;
@@ -125,8 +132,11 @@ const History = ({ history }: { history: any[] }) => {
         switch (item.type) {
           case "system":
             return (
-              <div key={index} className="border-b-2 py-4 text-lg font-bold">
-                <div className="text-l sticky top-0 bg-white">Assistant:</div>
+              <div key={index} className="pt-4 text-lg font-bold">
+                <div className="sticky top-0 flex items-center gap-2 bg-white">
+                  <div className="text-l text-primary">Assistant</div>
+                  <div className="flex-1 border-b-2" />
+                </div>
                 <div className="prose p-2">
                   <Mardown>{item.message}</Mardown>
                 </div>
@@ -134,8 +144,11 @@ const History = ({ history }: { history: any[] }) => {
             );
           case "user":
             return (
-              <div key={index} className="border-b-2 py-4 text-lg font-bold">
-                <div className="sticky top-0 bg-white">You:</div>
+              <div key={index} className="pt-4 text-lg font-bold">
+                <div className="sticky top-0 flex items-center gap-2 bg-white">
+                  <div className="text-l text-secondary">You</div>
+                  <div className="flex-1 border-b-2" />
+                </div>
                 <div className="prose p-2">
                   <Mardown>{item.message}</Mardown>
                 </div>
@@ -157,14 +170,61 @@ const History = ({ history }: { history: any[] }) => {
   );
 };
 
-const Input = () => {
+interface InputProps {
+  onSubmit: (message: string) => void;
+}
+
+const Input = ({ onSubmit }: InputProps) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const [message, setMessage] = useState("");
+  const isEmpty = message.trim().length === 0;
+
+  const forwardSubmit = (
+    e: FormEvent<HTMLFormElement> | KeyboardEvent<HTMLTextAreaElement>,
+  ) => {
+    e.preventDefault();
+    onSubmit(message);
+    setMessage("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      forwardSubmit(e);
+    }
+  };
+
+  useEffect(() => {
+    if (ref.current) {
+      // Find a way to make this cleaner, up to 5 lines
+      if (ref.current.scrollHeight / 32 < 5) {
+        ref.current.style.height = "auto";
+        ref.current.style.height = ref.current.scrollHeight + "px";
+      }
+    }
+  }, [message]);
+
   return (
-    <form>
+    <form onSubmit={forwardSubmit} className="relative">
+      <button
+        type="submit"
+        className="absolute bottom-4 right-2 opacity-60 hover:opacity-100 disabled:hidden"
+        disabled={isEmpty}
+      >
+        <ArrowUpSquareFill size="2rem" />
+      </button>
+
       <textarea
-        className="textarea textarea-primary w-full rounded-none pl-5"
-        placeholder="Bio"
+        name="message"
+        ref={ref}
+        autoFocus
+        value={message}
+        onChange={(e) => setMessage(e.currentTarget.value)}
+        className="textarea textarea-primary w-full rounded-none bg-white pr-14"
+        placeholder="Message your assistant..."
+        onKeyDown={handleKeyDown}
+        rows={1}
+        style={{ resize: "none" }}
       ></textarea>
-      <span className="button"></span>
     </form>
   );
 };
@@ -178,7 +238,11 @@ export const Chat = () => {
   return (
     <div className="flex h-full max-h-full flex-col gap-3 bg-white">
       <History history={historySnap} />
-      <Input />
+      <Input
+        onSubmit={(data) => {
+          console.warn(data);
+        }}
+      />
     </div>
   );
 };
