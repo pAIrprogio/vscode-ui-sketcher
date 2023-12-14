@@ -1,16 +1,20 @@
-interface RunningToolStep {
-  type: 'tools';
-  status: 'running';
+export interface RunningToolStep {
+  type: "tools";
+  status: "running";
   tools: Array<{
+    id: string;
     name: string;
     args: object;
+    status?: undefined;
+    output?: undefined;
   }>;
 }
 
-interface DoneToolStep {
-  type: 'tools';
-  status: 'done';
+export interface DoneToolStep {
+  type: "tools";
+  status: "done";
   tools: Array<{
+    id: string;
     status: "success" | "error";
     name: string;
     args: object;
@@ -18,23 +22,32 @@ interface DoneToolStep {
   }>;
 }
 
-type ToolStep = RunningToolStep | DoneToolStep;
+export type ToolStep = RunningToolStep | DoneToolStep;
 
-interface MessageStep {
-  type: 'message';
+export interface MessageStep {
+  type: "message";
   content: string;
 }
 
-type Step = ToolStep | MessageStep;
+export type Step = ToolStep | MessageStep;
 
-interface SystemMessage {
-  role: 'system';
+export interface SystemMessage {
+  id: string;
+  role: "system";
+  state:
+    | "thinking"
+    | "done"
+    | "cancelling"
+    | "cancelled"
+    | "failed"
+    | "expired";
   steps: Array<Step>;
 }
 
-interface UserMessage {
-  role: 'user';
+export interface UserMessage {
+  id: string;
+  role: "user";
   content: string;
 }
 
-type Message = SystemMessage | UserMessage;
+export type Message = SystemMessage | UserMessage;

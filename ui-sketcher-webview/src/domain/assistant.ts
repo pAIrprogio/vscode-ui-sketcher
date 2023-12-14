@@ -3,18 +3,37 @@ import { zip, map, toArray } from "iter-tools";
 import { AssistantCreateParams } from "openai/resources/beta/assistants/assistants.mjs";
 
 type PromiseValue<T> = T extends Promise<infer U> ? U : never;
-type AsyncGeneratorValue<T> = T extends AsyncGenerator<infer U, any, any> ? U : never;
+type AsyncGeneratorValue<T> = T extends AsyncGenerator<infer U, any, any>
+  ? U
+  : never;
 
-const defaultErrorFormater = (error: any) => {
-  if (typeof error === "string") return { success: false, error };
-  if (error instanceof Error) return { success: false, error: error.message };
+export type SuccessToolOutput = {
+  success: true;
+  output: any;
+  error?: undefined;
+};
+
+export type ErrorToolOutput = {
+  success: false;
+  error: string;
+  output?: undefined;
+};
+
+export type ToolOutput = SuccessToolOutput | ErrorToolOutput;
+
+export type ToolFn = (
+  ...args: any[]
+) => Promise<ToolOutput>;
+
+const defaultErrorFormater = (error: any): ErrorToolOutput => {
+  if (typeof error === "string") return { success: false as const, error };
+  if (error instanceof Error)
+    return { success: false as const, error: error.message };
 
   return { success: false as const, error: JSON.stringify(error) };
 };
 
 type ErrorFormaterFn = typeof defaultErrorFormater;
-
-export type ToolFn = (...args: any[]) => Promise<any>;
 
 export type AssistantConfig = {
   openAIClient: OpenAI;
@@ -53,7 +72,7 @@ export const createAssistant = async (config: AssistantConfig) => {
 
     const outputPromises = toolCalls.map((toolCall) => {
       if (toolCall.type !== "function") {
-        return { success: false, error: "Unsupported tool call type" };
+        return { success: false, error: "Unsupported tool call type" } as ErrorToolOutput;
       }
 
       const functionName = toolCall.function.name as keyof typeof toolsSchema;
@@ -65,7 +84,7 @@ export const createAssistant = async (config: AssistantConfig) => {
         return {
           success: false,
           error: `Unsupported tool function ${functionName as string}`,
-        };
+        } as ErrorToolOutput;
 
       const output = fn(functionArguments).catch(errorFormater);
 
@@ -80,22 +99,20 @@ export const createAssistant = async (config: AssistantConfig) => {
       ([toolCall, output]) => {
         return {
           tool_call_id: toolCall.id,
-          output: JSON.stringify(output ?? { success: true }),
+          output,
         };
       },
       zip(toolCalls, outputs),
     );
 
-    const isSuccess = outputs.every(
-      (output) => !(output instanceof Object) || output.success,
-    );
+    const isSuccess = outputs.every((output) => output.success === true);
 
     return [toArray(toolsOutput), isSuccess] as const;
-  }
+  };
 
   return {
     openAIAssistant,
-    executeFunctions
+    executeFunctions,
   };
 };
 
@@ -104,12 +121,18 @@ export type Assistant = PromiseValue<ReturnType<typeof createAssistant>>;
 export type ThreadConfig = {
   openAIClient: OpenAI;
   assistant: Assistant;
-}
+  pollingInterval?: number;
+};
 
 export async function createThread(config: ThreadConfig) {
-  const { assistant: defaultAssistant, openAIClient } = config;
+  const {
+    assistant: defaultAssistant,
+    openAIClient,
+    pollingInterval = 500,
+  } = config;
+
   const openAIThread = await openAIClient.beta.threads.create({});
-  let currentCancel = async () => { }
+  let currentCancel = async () => { };
 
   /**
    * Cancel the current run
@@ -126,15 +149,23 @@ export async function createThread(config: ThreadConfig) {
     currentCancel = async () => {
       isInterrupted = true;
       if (!run) return;
-      await openAIClient.beta.threads.runs.cancel(openAIThread.id, run.id).catch(() => {
-        // Ignore error when trying to cancel a cancelled or completed run
-      });
+      await openAIClient.beta.threads.runs
+        .cancel(openAIThread.id, run.id)
+        .catch(() => {
+          // Ignore error when trying to cancel a cancelled or completed run
+        });
     };
 
-    await openAIClient.beta.threads.messages.create(openAIThread.id, {
+    const message = await openAIClient.beta.threads.messages.create(openAIThread.id, {
       role: "user",
       content: text,
     });
+
+    yield {
+      type: "message_sent" as const,
+      id: message.id,
+      content: text
+    }
 
     const runAssistant = assistant ?? defaultAssistant;
 
@@ -148,9 +179,12 @@ export async function createThread(config: ThreadConfig) {
         run.status === "in_progress" ||
         run.status === "cancelling"
       ) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, pollingInterval));
         yield { type: run.status };
-        run = await openAIClient.beta.threads.runs.retrieve(openAIThread.id, run.id);
+        run = await openAIClient.beta.threads.runs.retrieve(
+          openAIThread.id,
+          run.id,
+        );
         continue;
       }
 
@@ -173,19 +207,40 @@ export async function createThread(config: ThreadConfig) {
       }
 
       if (run.status === "requires_action") {
-        const toolsNames =
-          run.required_action?.submit_tool_outputs.tool_calls.map(
-            (tool) => tool.function.name,
-          ) ?? [];
-        yield { type: "executing_actions" as const, tools: toolsNames };
+        const tools = run.required_action?.submit_tool_outputs.tool_calls ?? [];
+
+        const mappedTools = tools.map((tool) => ({
+          id: tool.id,
+          name: tool.function.name,
+          args: JSON.parse(tool.function.arguments),
+        }));
+
+        yield { type: "executing_actions" as const, tools: mappedTools };
+
         try {
-          const [tool_outputs, isSuccess] = await runAssistant.executeFunctions(run);
+          const [toolOutputs, isSuccess] =
+            await runAssistant.executeFunctions(run);
+
           const newRun = await openAIClient.beta.threads.runs.submitToolOutputs(
             openAIThread.id,
             run.id,
-            { tool_outputs },
+            {
+              tool_outputs: toolOutputs.map((tool) => ({
+                tool_call_id: tool.tool_call_id,
+                output: JSON.stringify(tool.output),
+              })),
+            },
           );
-          if (!isSuccess) yield { type: "executing_actions_failure" as const };
+
+          const mappedToolsWithOutput = mappedTools.map((tool, index) => ({
+            ...tool,
+            isSuccess: toolOutputs[index].output.success,
+            output: toolOutputs[index].output.output,
+            error: toolOutputs[index].output.error,
+          }));
+
+          yield { type: "executing_actions_done" as const, isSuccess, tools: mappedToolsWithOutput };
+
           run = newRun;
         } catch (error) {
           // Recover from error when trying to send tool outputs on a cancelled run
@@ -195,12 +250,15 @@ export async function createThread(config: ThreadConfig) {
       }
 
       if (run.status === "completed") {
-        const messages = await openAIClient.beta.threads.messages.list(openAIThread.id);
+        const messages = await openAIClient.beta.threads.messages.list(
+          openAIThread.id,
+        );
+
         const lastMessage = messages.data[0].content[0];
 
         if (lastMessage.type === "text") {
           // TODO: add annotations
-          yield { type: "completed" as const, message: lastMessage.text.value };
+          yield { type: "completed" as const, message: lastMessage.text.value, id: messages.data[0].id };
           return;
         }
       }
@@ -210,7 +268,7 @@ export async function createThread(config: ThreadConfig) {
   return {
     openAIThread,
     sendMessage,
-    cancel
+    cancel,
   };
 }
 

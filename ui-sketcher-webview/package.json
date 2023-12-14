@@ -26,6 +26,7 @@
     "react-markdown": "^9.0.1",
     "react-syntax-highlighter": "^15.5.0",
     "remark-gfm": "^4.0.0",
+    "use-constant": "^1.1.1",
     "valtio": "^1.12.1"
   },
   "pnpm": {

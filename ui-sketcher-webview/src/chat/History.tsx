@@ -1,17 +1,11 @@
-import { useSnapshot } from "valtio";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowDownCircleFill } from "react-bootstrap-icons";
 import RMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import {
-  FormEvent,
-  KeyboardEvent,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { ArrowDownCircleFill, ArrowUpSquareFill } from "react-bootstrap-icons";
+import remarkGfm from "remark-gfm";
+import { ToolsStep } from "./ToolsStep";
+import { Message } from "./chat.types";
 
 const Mardown = ({ children }: { children: string }) => (
   <RMarkdown
@@ -57,7 +51,7 @@ const Code = (
   );
 };
 
-const History = ({ history }: { history: any[] }) => {
+export const History = ({ history }: { history: Message[] }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [displayScrollButton, setDisplayScrollButton] = useState(false);
 
@@ -85,7 +79,7 @@ const History = ({ history }: { history: any[] }) => {
   // Start at bottom on mount
   useEffect(() => {
     scrollToBottom(false);
-  }, []);
+  }, [scrollToBottom]);
 
   // Scroll to bottom when history changes
   useEffect(() => {
@@ -94,12 +88,12 @@ const History = ({ history }: { history: any[] }) => {
 
   return (
     <div
-      className="scroll relative flex flex-1 flex-col overflow-y-scroll px-3"
+      className="scroll relative flex flex-1 flex-col overflow-y-scroll bg-white px-3"
       onScroll={onScroll}
       ref={scrollRef}
     >
       {history.map((item, index) => {
-        switch (item.type) {
+        switch (item.role) {
           case "system":
             return (
               <div key={index} className="pt-4 text-lg font-bold">
@@ -107,8 +101,22 @@ const History = ({ history }: { history: any[] }) => {
                   <div className="text-l text-primary">Assistant</div>
                   <div className="flex-1 border-b-2" />
                 </div>
-                <div className="prose p-2">
-                  <Mardown>{item.message}</Mardown>
+                <div className="flex flex-col gap-2">
+                  {item.steps.map((step, i) => {
+                    switch (step.type) {
+                      case "tools":
+                        return <ToolsStep key={i} step={step} index={i} />;
+                      case "message":
+                        return (
+                          <div key={i} className="flex flex-col gap-2">
+                            <span className="font-bold">{i + 1}. Response</span>
+                            <div key={i} className="prose p-2">
+                              <Mardown>{step.content}</Mardown>
+                            </div>
+                          </div>
+                        );
+                    }
+                  })}
                 </div>
               </div>
             );
@@ -120,7 +128,7 @@ const History = ({ history }: { history: any[] }) => {
                   <div className="flex-1 border-b-2" />
                 </div>
                 <div className="prose p-2">
-                  <Mardown>{item.message}</Mardown>
+                  <Mardown>{item.content}</Mardown>
                 </div>
               </div>
             );
@@ -136,80 +144,6 @@ const History = ({ history }: { history: any[] }) => {
           </button>
         </div>
       )}
-    </div>
-  );
-};
-
-interface InputProps {
-  onSubmit: (message: string) => void;
-}
-
-const Input = ({ onSubmit }: InputProps) => {
-  const ref = useRef<HTMLTextAreaElement>(null);
-  const [message, setMessage] = useState("");
-  const isEmpty = message.trim().length === 0;
-
-  const forwardSubmit = (
-    e: FormEvent<HTMLFormElement> | KeyboardEvent<HTMLTextAreaElement>,
-  ) => {
-    e.preventDefault();
-    onSubmit(message);
-    setMessage("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      forwardSubmit(e);
-    }
-  };
-
-  useEffect(() => {
-    if (ref.current) {
-      // Find a way to make this cleaner, up to 5 lines
-      if (ref.current.scrollHeight / 32 < 5) {
-        ref.current.style.height = "auto";
-        ref.current.style.height = ref.current.scrollHeight + "px";
-      }
-    }
-  }, [message]);
-
-  return (
-    <form onSubmit={forwardSubmit} className="relative">
-      <button
-        type="submit"
-        className="absolute bottom-4 right-2 opacity-60 hover:opacity-100 disabled:hidden"
-        disabled={isEmpty}
-      >
-        <ArrowUpSquareFill size="2rem" />
-      </button>
-
-      <textarea
-        name="message"
-        ref={ref}
-        autoFocus
-        value={message}
-        onChange={(e) => setMessage(e.currentTarget.value)}
-        className="textarea textarea-primary w-full rounded-none bg-white pr-14"
-        placeholder="Message your assistant..."
-        onKeyDown={handleKeyDown}
-        rows={1}
-        style={{ resize: "none" }}
-      ></textarea>
-    </form>
-  );
-};
-
-export const Chat = () => {
-  const historySnap = useSnapshot(state);
-
-  return (
-    <div className="flex h-full max-h-full flex-col gap-3 bg-white">
-      <History history={historySnap.history} />
-      <Input
-        onSubmit={(data) => {
-          state.history.push({ type: "user", message: data });
-        }}
-      />
     </div>
   );
 };

@@ -13,6 +13,9 @@
   "settings": {
     "typescript.tsc.autoDetect": "off",
     "editor.formatOnSave": true,
-    "files.associations": { "*.css": "tailwindcss" }
+    "files.associations": {
+      "*.css": "tailwindcss"
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }
