@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.1.6] - 2023-12-14
+
+### Added
+
+- The maxTokens settings is now validated against a 100-4096 range. See [issue #1](https://github.com/pAIrprogio/vscode-ui-sketcher/issues/1)
+
 ## [1.1.5] - 2023-11-28
 
 ### Changed
