@@ -25,6 +25,15 @@ export default {
           success: "#edf3ec",
           warning: "#fbf3db",
           error: "#fdebec",
+          ".text-error": {
+            color: "#D44747",
+          },
+          ".text-warning": {
+            color: "#D9730D",
+          },
+          ".text-success": {
+            color: "#448361",
+          },
         },
       },
     ],

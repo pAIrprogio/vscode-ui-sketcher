@@ -27,3 +27,7 @@ body {
   @apply m-0;
   @apply p-0;
 }
+
+.prose li {
+  @apply my-0;
+}

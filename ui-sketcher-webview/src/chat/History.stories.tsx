@@ -99,7 +99,7 @@ export const Done: Story = {
       {
         id: "2",
         role: "system",
-        state: "thinking",
+        state: "done",
         steps: [
           {
             type: "tools",

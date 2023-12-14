@@ -2,9 +2,10 @@ import { ToolStep } from "./chat.types";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CheckCircle, XCircle } from "react-bootstrap-icons";
+import { DeepReadOnly } from "../ts.utils";
 
 interface ToolsStepProps {
-  step: ToolStep;
+  step: DeepReadOnly<ToolStep>;
   index: number;
 }
 
@@ -13,11 +14,8 @@ export const ToolsStep = ({ step, index }: ToolsStepProps) => {
     <div className="flex flex-col gap-2">
       <div className="flex gap-2 align-middle">
         <span className="font-bold">{index + 1}. Executing tools</span>
-        {step.status === "running" ? (
-          <span className="loading loading-bars loading-sm" />
-        ) : null}
       </div>
-      <div className="join join-vertical w-full">
+      <div className="join join-vertical w-full pl-6">
         {step.tools.map((tool, ti) => (
           <Tool key={tool.id} tool={tool} index={ti} />
         ))}

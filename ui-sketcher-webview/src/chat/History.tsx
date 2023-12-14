@@ -4,6 +4,8 @@ import RMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { a11yDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import remarkGfm from "remark-gfm";
+import { DeepReadOnly } from "../ts.utils";
+import { StateIndicator } from "./SystemStateIndicator";
 import { ToolsStep } from "./ToolsStep";
 import { Message } from "./chat.types";
 
@@ -51,7 +53,7 @@ const Code = (
   );
 };
 
-export const History = ({ history }: { history: Message[] }) => {
+export const History = ({ history }: { history: DeepReadOnly<Message[]> }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [displayScrollButton, setDisplayScrollButton] = useState(false);
 
@@ -84,7 +86,7 @@ export const History = ({ history }: { history: Message[] }) => {
   // Scroll to bottom when history changes
   useEffect(() => {
     scrollToBottom();
-  }, [history, scrollToBottom]);
+  }, [history?.length, scrollToBottom]);
 
   return (
     <div
@@ -96,10 +98,11 @@ export const History = ({ history }: { history: Message[] }) => {
         switch (item.role) {
           case "system":
             return (
-              <div key={index} className="pt-4 text-lg font-bold">
+              <div key={index} className="pt-4 text-lg">
                 <div className="sticky top-0 flex items-center gap-2 bg-white">
-                  <div className="text-l text-primary">Assistant</div>
-                  <div className="flex-1 border-b-2" />
+                  <div className="text-l divider divider-start w-full text-primary">
+                    Assistant <StateIndicator state={item.state} />
+                  </div>
                 </div>
                 <div className="flex flex-col gap-2">
                   {item.steps.map((step, i) => {
@@ -122,10 +125,11 @@ export const History = ({ history }: { history: Message[] }) => {
             );
           case "user":
             return (
-              <div key={index} className="pt-4 text-lg font-bold">
+              <div key={index} className="pt-4 text-lg">
                 <div className="sticky top-0 flex items-center gap-2 bg-white">
-                  <div className="text-l text-secondary">You</div>
-                  <div className="flex-1 border-b-2" />
+                  <div className="text-l divider divider-start w-full text-secondary">
+                    You
+                  </div>
                 </div>
                 <div className="prose p-2">
                   <Mardown>{item.content}</Mardown>
