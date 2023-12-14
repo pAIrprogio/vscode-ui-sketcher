@@ -54,7 +54,9 @@
         },
         "ui-sketcher.maxTokens": {
           "type": "number",
-          "default": 1000,
+          "default": 2048,
+          "maximum": 4096,
+          "minimum": 100,
           "description": "Maximum number of tokens to generate"
         },
         "ui-sketcher.previewUrl": {
