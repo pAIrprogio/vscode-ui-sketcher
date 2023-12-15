@@ -12,7 +12,9 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@tldraw/editor": "2.0.0-canary.ba4091c59418",
     "@tldraw/tldraw": "2.0.0-canary.ba4091c59418",
+    "@tldraw/validate": "2.0.0-canary.ba4091c59418",
     "@types/react-syntax-highlighter": "^15.5.11",
     "canvas-size": "^1.2.6",
     "daisyui": "^4.4.19",

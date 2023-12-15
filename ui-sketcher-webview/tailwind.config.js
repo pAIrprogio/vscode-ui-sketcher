@@ -10,6 +10,9 @@ export default {
         300: 300,
         1000: 1000,
       },
+      boxShadow: {
+        "tl-2": "var(--shadow-2)",
+      },
     },
   },
   daisyui: {
@@ -34,6 +37,9 @@ export default {
           ".text-success": {
             color: "#448361",
           },
+          "--rounded-box": "0.5rem", // border radius rounded-box utility class, used in card and other large boxes
+          "--rounded-btn": "0.5rem", // border radius rounded-btn utility class, used in buttons and similar element
+          "--rounded-badge": "1rem", // border radius rounded-badge utility class, used in badges and similar
         },
       },
     ],

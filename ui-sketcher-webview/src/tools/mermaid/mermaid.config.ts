@@ -1,4 +1,4 @@
-import { MermaidConfig } from 'mermaid';
+import { MermaidConfig } from "mermaid";
 import mermaidStyles from "./mermaid.css?raw";
 
 export const mermaidConfig: MermaidConfig = {
@@ -7,4 +7,4 @@ export const mermaidConfig: MermaidConfig = {
   securityLevel: "loose",
   themeCSS: mermaidStyles,
   fontFamily: "Fira Code",
-}
+};
