@@ -5,7 +5,8 @@
     "ecmaVersion": 6,
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint"],
+  "extends": ["plugin:valtio/recommended"],
+  "plugins": ["@typescript-eslint", "valtio"],
   "rules": {
     "@typescript-eslint/naming-convention": "warn",
     "@typescript-eslint/semi": "warn",
